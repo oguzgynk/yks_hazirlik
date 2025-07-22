@@ -1,0 +1,49 @@
+name: yks_app
+description: YKS Hazırlık Uygulaması
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  shared_preferences: ^2.2.2
+  fl_chart: ^0.68.0
+  google_mobile_ads: ^5.0.0
+  in_app_purchase: ^3.1.11
+  flutter_local_notifications: ^17.0.0
+  circular_countdown_timer: ^0.2.3
+  percent_indicator: ^4.2.1
+  animated_text_kit: ^4.2.2
+  flutter_animate: ^4.2.0
+  intl: ^0.20.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/images/
+    - assets/icons/
+
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+        - asset: assets/fonts/Poppins-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Poppins-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Poppins-Bold.ttf
+          weight: 700
