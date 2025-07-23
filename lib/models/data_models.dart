@@ -318,3 +318,137 @@ class PomodoroSettings {
     );
   }
 }
+
+// Ajenda aktivite türleri
+enum AgendaActivityType {
+  studyTopic,    // Konu çalışma
+  solveQuestions, // Soru çözme
+  other,         // Diğer
+}
+
+// Ajenda aktivitesi
+class AgendaActivity {
+  final String id;
+  final String title;
+  final AgendaActivityType type;
+  final DateTime dateTime;
+  final int duration; // dakika
+  final bool isCompleted;
+  final String? examType; // TYT/AYT (konu çalışma için)
+  final String? subject; // Ders
+  final String? topic; // Konu
+  final String? bookId; // Kitap ID'si (soru çözme için)
+  final String? bookName; // Kitap adı
+  final bool autoCompleteBookTopic; // Kitap konusunu otomatik tamamla
+  final String? customTitle; // Diğer aktiviteler için özel başlık
+  final DateTime createdDate;
+
+  AgendaActivity({
+    required this.id,
+    required this.title,
+    required this.type,
+    required this.dateTime,
+    required this.duration,
+    this.isCompleted = false,
+    this.examType,
+    this.subject,
+    this.topic,
+    this.bookId,
+    this.bookName,
+    this.autoCompleteBookTopic = false,
+    this.customTitle,
+    required this.createdDate,
+  });
+
+  String get displayTitle {
+    switch (type) {
+      case AgendaActivityType.studyTopic:
+        return '$examType - $subject: $topic';
+      case AgendaActivityType.solveQuestions:
+        if (bookName != null && bookName!.isNotEmpty) {
+          return '$bookName${topic != null ? " - $topic" : ""}';
+        }
+        return subject != null ? '$subject${topic != null ? " - $topic" : ""}' : 'Soru Çözme';
+      case AgendaActivityType.other:
+        return customTitle ?? title;
+    }
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'title': title,
+      'type': type.toString().split('.').last,
+      'dateTime': dateTime.millisecondsSinceEpoch,
+      'duration': duration,
+      'isCompleted': isCompleted,
+      'examType': examType,
+      'subject': subject,
+      'topic': topic,
+      'bookId': bookId,
+      'bookName': bookName,
+      'autoCompleteBookTopic': autoCompleteBookTopic,
+      'customTitle': customTitle,
+      'createdDate': createdDate.millisecondsSinceEpoch,
+    };
+  }
+
+  factory AgendaActivity.fromMap(Map<String, dynamic> map) {
+    return AgendaActivity(
+      id: map['id'] ?? '',
+      title: map['title'] ?? '',
+      type: AgendaActivityType.values.firstWhere(
+        (e) => e.toString().split('.').last == map['type'],
+        orElse: () => AgendaActivityType.other,
+      ),
+      dateTime: DateTime.fromMillisecondsSinceEpoch(map['dateTime']),
+      duration: map['duration']?.toInt() ?? 60,
+      isCompleted: map['isCompleted'] ?? false,
+      examType: map['examType'],
+      subject: map['subject'],
+      topic: map['topic'],
+      bookId: map['bookId'],
+      bookName: map['bookName'],
+      autoCompleteBookTopic: map['autoCompleteBookTopic'] ?? false,
+      customTitle: map['customTitle'],
+      createdDate: DateTime.fromMillisecondsSinceEpoch(map['createdDate']),
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+  factory AgendaActivity.fromJson(String source) => AgendaActivity.fromMap(json.decode(source));
+
+  AgendaActivity copyWith({
+    String? id,
+    String? title,
+    AgendaActivityType? type,
+    DateTime? dateTime,
+    int? duration,
+    bool? isCompleted,
+    String? examType,
+    String? subject,
+    String? topic,
+    String? bookId,
+    String? bookName,
+    bool? autoCompleteBookTopic,
+    String? customTitle,
+    DateTime? createdDate,
+  }) {
+    return AgendaActivity(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      type: type ?? this.type,
+      dateTime: dateTime ?? this.dateTime,
+      duration: duration ?? this.duration,
+      isCompleted: isCompleted ?? this.isCompleted,
+      examType: examType ?? this.examType,
+      subject: subject ?? this.subject,
+      topic: topic ?? this.topic,
+      bookId: bookId ?? this.bookId,
+      bookName: bookName ?? this.bookName,
+      autoCompleteBookTopic: autoCompleteBookTopic ?? this.autoCompleteBookTopic,
+      customTitle: customTitle ?? this.customTitle,
+      createdDate: createdDate ?? this.createdDate,
+    );
+  }
+}

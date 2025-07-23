@@ -165,6 +165,64 @@ class StorageService {
     return DateTime.parse(dateString);
   }
 
+  // Ajenda aktiviteleri
+  static Future<void> saveAgendaActivity(AgendaActivity activity) async {
+    List<String> activities = getStringList('agenda_activities') ?? [];
+    // Eğer aktivite zaten varsa güncelle
+    activities.removeWhere((activityJson) {
+      AgendaActivity existingActivity = AgendaActivity.fromJson(activityJson);
+      return existingActivity.id == activity.id;
+    });
+    activities.add(activity.toJson());
+    await setStringList('agenda_activities', activities);
+  }
+
+  static List<AgendaActivity> getAgendaActivities() {
+    List<String> activitiesJson = getStringList('agenda_activities') ?? [];
+    return activitiesJson.map((json) => AgendaActivity.fromJson(json)).toList();
+  }
+
+  static Future<void> removeAgendaActivity(String activityId) async {
+    List<String> activities = getStringList('agenda_activities') ?? [];
+    activities.removeWhere((activityJson) {
+      AgendaActivity activity = AgendaActivity.fromJson(activityJson);
+      return activity.id == activityId;
+    });
+    await setStringList('agenda_activities', activities);
+  }
+
+  static List<AgendaActivity> getAgendaActivitiesForDate(DateTime date) {
+    List<AgendaActivity> allActivities = getAgendaActivities();
+    DateTime startOfDay = DateTime(date.year, date.month, date.day);
+    DateTime endOfDay = startOfDay.add(const Duration(days: 1));
+    
+    return allActivities.where((activity) {
+      return activity.dateTime.isAfter(startOfDay.subtract(const Duration(seconds: 1))) &&
+             activity.dateTime.isBefore(endOfDay);
+    }).toList();
+  }
+
+  static List<AgendaActivity> getAgendaActivitiesForWeek(DateTime date) {
+    List<AgendaActivity> allActivities = getAgendaActivities();
+    DateTime startOfWeek = date.subtract(Duration(days: date.weekday - 1));
+    startOfWeek = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
+    DateTime endOfWeek = startOfWeek.add(const Duration(days: 7));
+    
+    return allActivities.where((activity) {
+      return activity.dateTime.isAfter(startOfWeek.subtract(const Duration(seconds: 1))) &&
+             activity.dateTime.isBefore(endOfWeek);
+    }).toList();
+  }
+
+  // Bildirim ayarları
+  static Future<void> setNotificationEnabled(bool enabled) async {
+    await setBool('notifications_enabled', enabled);
+  }
+
+  static bool getNotificationEnabled() {
+    return getBool('notifications_enabled') ?? true;
+  }
+
   // Çalışma verileri için yardımcı metodlar
   static List<StudySession> getStudySessionsByDateRange(DateTime start, DateTime end) {
     List<StudySession> allSessions = getStudySessions();

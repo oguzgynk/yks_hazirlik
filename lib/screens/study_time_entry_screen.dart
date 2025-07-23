@@ -11,7 +11,10 @@ class StudyTimeEntryScreen extends StatefulWidget {
   State<StudyTimeEntryScreen> createState() => _StudyTimeEntryScreenState();
 }
 
-class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> {
+class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with TickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _slideAnimation;
+  
   String _selectedExamType = 'TYT';
   String? _selectedSubject;
   String? _selectedTopic;
@@ -24,12 +27,31 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> {
   @override
   void initState() {
     super.initState();
+    _setupAnimations();
     _hoursController.addListener(_calculateTime);
     _minutesController.addListener(_calculateTime);
   }
 
+  void _setupAnimations() {
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    
+    _slideAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOutBack,
+    ));
+    
+    _animationController.forward();
+  }
+
   @override
   void dispose() {
+    _animationController.dispose();
     _hoursController.dispose();
     _minutesController.dispose();
     super.dispose();
@@ -66,41 +88,95 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> {
         title: const Text('Çalışma Süresi Girişi'),
         elevation: 0,
         backgroundColor: Colors.transparent,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildExamTypeSelector(),
-            const SizedBox(height: 24),
-            _buildSubjectSelector(),
-            const SizedBox(height: 24),
-            _buildTopicSelector(),
-            const SizedBox(height: 24),
-            _buildTimeInputs(),
-            const SizedBox(height: 24),
-            _buildResultCard(),
-            const SizedBox(height: 24),
-            _buildSaveButton(),
-          ],
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryPurple.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.arrow_back,
+              color: AppTheme.primaryPurple,
+            ),
+          ),
         ),
+      ),
+      body: AnimatedBuilder(
+        animation: _slideAnimation,
+        builder: (context, child) {
+          return Transform.translate(
+            offset: Offset(0, 50 * (1 - _slideAnimation.value)),
+            child: Opacity(
+              opacity: _slideAnimation.value,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildExamTypeSelector(),
+                    const SizedBox(height: 24),
+                    _buildSubjectSelector(),
+                    const SizedBox(height: 24),
+                    _buildTopicSelector(),
+                    const SizedBox(height: 24),
+                    _buildTimeInputs(),
+                    const SizedBox(height: 24),
+                    _buildResultCard(),
+                    const SizedBox(height: 24),
+                    _buildSaveButton(),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }
 
   Widget _buildExamTypeSelector() {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+      elevation: 4,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              AppTheme.primaryPurple.withOpacity(0.05),
+              AppTheme.primaryBlue.withOpacity(0.05),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Sınav Türü',
-              style: Theme.of(context).textTheme.headlineSmall,
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.primaryGradient,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.quiz,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Sınav Türü',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -136,12 +212,16 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
             gradient: isSelected ? AppTheme.primaryGradient : null,
             color: isSelected ? null : Colors.grey[200],
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? Colors.transparent : Colors.grey[300]!,
+            ),
           ),
           child: Text(
             text,
@@ -149,6 +229,7 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> {
             style: TextStyle(
               color: isSelected ? Colors.white : Colors.grey[600],
               fontWeight: FontWeight.w600,
+              fontSize: 16,
             ),
           ),
         ),
@@ -158,35 +239,60 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> {
 
   Widget _buildSubjectSelector() {
     return Card(
+      elevation: 4,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Ders Seçin',
-              style: Theme.of(context).textTheme.headlineSmall,
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryBlue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.school,
+                    color: AppTheme.primaryBlue,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Ders Seçin',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              value: _selectedSubject,
-              decoration: const InputDecoration(
-                hintText: 'Ders seçin...',
-                prefixIcon: Icon(Icons.school),
-                border: OutlineInputBorder(),
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(12),
               ),
-              items: _subjects.map((subject) {
-                return DropdownMenuItem(
-                  value: subject,
-                  child: Text(subject),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedSubject = value;
-                  _selectedTopic = null;
-                });
-              },
+              child: DropdownButtonFormField<String>(
+                value: _selectedSubject,
+                decoration: const InputDecoration(
+                  hintText: 'Ders seçin...',
+                  prefixIcon: Icon(Icons.school, color: AppTheme.primaryBlue),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.all(16),
+                ),
+                items: _subjects.map((subject) {
+                  return DropdownMenuItem(
+                    value: subject,
+                    child: Text(subject),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedSubject = value;
+                    _selectedTopic = null;
+                  });
+                },
+              ),
             ),
           ],
         ),
@@ -196,37 +302,62 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> {
 
   Widget _buildTopicSelector() {
     return Card(
+      elevation: 4,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Konu Seçin',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              value: _selectedTopic,
-              decoration: const InputDecoration(
-                hintText: 'Konu seçin...',
-                prefixIcon: Icon(Icons.topic),
-                border: OutlineInputBorder(),
-              ),
-              items: _topics.map((topic) {
-                return DropdownMenuItem(
-                  value: topic,
-                  child: Text(
-                    topic,
-                    overflow: TextOverflow.ellipsis,
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.accentBlue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                );
-              }).toList(),
-              onChanged: _selectedSubject == null ? null : (value) {
-                setState(() {
-                  _selectedTopic = value;
-                });
-              },
+                  child: const Icon(
+                    Icons.topic,
+                    color: AppTheme.accentBlue,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Konu Seçin',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: DropdownButtonFormField<String>(
+                value: _selectedTopic,
+                decoration: const InputDecoration(
+                  hintText: 'Konu seçin...',
+                  prefixIcon: Icon(Icons.topic, color: AppTheme.accentBlue),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.all(16),
+                ),
+                items: _topics.map((topic) {
+                  return DropdownMenuItem(
+                    value: topic,
+                    child: Text(
+                      topic,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  );
+                }).toList(),
+                onChanged: _selectedSubject == null ? null : (value) {
+                  setState(() {
+                    _selectedTopic = value;
+                  });
+                },
+              ),
             ),
           ],
         ),
@@ -236,70 +367,136 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> {
 
   Widget _buildTimeInputs() {
     return Card(
+      elevation: 4,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Çalışma Süresi',
-              style: Theme.of(context).textTheme.headlineSmall,
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.secondaryPurple.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.access_time,
+                    color: AppTheme.secondaryPurple,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Çalışma Süresi',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _hoursController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Saat',
-                      prefixIcon: Icon(Icons.access_time, color: AppTheme.primaryBlue),
-                      border: OutlineInputBorder(),
-                      suffixText: 'sa',
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.primaryBlue.withOpacity(0.3)),
+                    ),
+                    child: TextField(
+                      controller: _hoursController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: AppTheme.primaryBlue,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Saat',
+                        labelStyle: TextStyle(color: AppTheme.primaryBlue),
+                        prefixIcon: Icon(Icons.access_time, color: AppTheme.primaryBlue),
+                        border: InputBorder.none,
+                        suffixText: 'sa',
+                        suffixStyle: TextStyle(color: AppTheme.primaryBlue),
+                        contentPadding: EdgeInsets.all(16),
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: TextField(
-                    controller: _minutesController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Dakika',
-                      prefixIcon: Icon(Icons.timer, color: AppTheme.primaryPurple),
-                      border: OutlineInputBorder(),
-                      suffixText: 'dk',
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryPurple.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppTheme.primaryPurple.withOpacity(0.3)),
+                    ),
+                    child: TextField(
+                      controller: _minutesController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: AppTheme.primaryPurple,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Dakika',
+                        labelStyle: TextStyle(color: AppTheme.primaryPurple),
+                        prefixIcon: Icon(Icons.timer, color: AppTheme.primaryPurple),
+                        border: InputBorder.none,
+                        suffixText: 'dk',
+                        suffixStyle: TextStyle(color: AppTheme.primaryPurple),
+                        contentPadding: EdgeInsets.all(16),
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppTheme.primaryBlue.withOpacity(0.1),
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.primaryBlue.withOpacity(0.1),
+                    AppTheme.primaryPurple.withOpacity(0.1),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: AppTheme.primaryBlue.withOpacity(0.3),
                 ),
               ),
-              child: Column(
+              child: Row(
                 children: [
-                  Icon(
-                    Icons.info_outline,
-                    color: AppTheme.primaryBlue,
-                    size: 24,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Çalışma süreniz günlük istatistiklerinize eklenir',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.primaryBlue,
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.primaryGradient,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    textAlign: TextAlign.center,
+                    child: const Icon(
+                      Icons.info_outline,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Çalışma süreniz günlük istatistiklerinize eklenir',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppTheme.primaryBlue,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -312,26 +509,35 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> {
 
   Widget _buildResultCard() {
     return Card(
+      elevation: 8,
+      shadowColor: AppTheme.secondaryPurple.withOpacity(0.3),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           gradient: AppTheme.secondaryGradient,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
           children: [
-            const Icon(
-              Icons.schedule,
-              color: Colors.white,
-              size: 32,
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(50),
+              ),
+              child: const Icon(
+                Icons.schedule,
+                color: Colors.white,
+                size: 32,
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             const Text(
               'Toplam Çalışma Süresi',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -342,15 +548,24 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> {
                 : '0sa 0dk',
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 36,
+                fontSize: 42,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Text(
-              '$_totalMinutes dakika',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '$_totalMinutes dakika',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],
@@ -366,28 +581,24 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> {
 
     return SizedBox(
       width: double.infinity,
-      child: ElevatedButton(
+      child: ElevatedButton.icon(
         onPressed: isValid ? _saveSession : null,
+        icon: const Icon(Icons.save),
+        label: const Text(
+          'Kaydet',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          backgroundColor: isValid ? AppTheme.primaryPurple : Colors.grey[300],
+          foregroundColor: isValid ? Colors.white : Colors.grey[600],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          disabledBackgroundColor: Colors.grey[300],
-        ),
-        child: Container(
-          decoration: isValid ? const BoxDecoration(
-            gradient: AppTheme.primaryGradient,
-          ) : null,
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Text(
-            'Kaydet',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: isValid ? Colors.white : Colors.grey[600],
-            ),
-          ),
+          elevation: isValid ? 4 : 0,
         ),
       ),
     );
@@ -396,7 +607,20 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> {
   Future<void> _saveSession() async {
     if (_totalMinutes == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Çalışma süresi girmelisiniz')),
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.warning, color: Colors.white),
+              SizedBox(width: 12),
+              Text('Çalışma süresi girmelisiniz'),
+            ],
+          ),
+          backgroundColor: Colors.orange,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
       );
       return;
     }
@@ -420,11 +644,20 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> {
           content: Row(
             children: [
               const Icon(Icons.check_circle, color: Colors.white),
-              const SizedBox(width: 8),
-              Text('Çalışma süresi kaydedildi! ${(_totalMinutes / 60).toStringAsFixed(1)} saat'),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Çalışma süresi kaydedildi! ${(_totalMinutes / 60).toStringAsFixed(1)} saat',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
             ],
           ),
           backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
       Navigator.pop(context);

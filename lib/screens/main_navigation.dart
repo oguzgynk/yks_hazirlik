@@ -6,8 +6,8 @@ import 'home_screen.dart';
 import 'statistics_screen.dart';
 import 'topics_screen.dart';
 import 'books_screen.dart';
-import 'pomodoro_screen.dart';
-import '../utils/theme.dart'; // ✅
+import 'agenda_screen.dart';
+import '../utils/theme.dart';
 
 class MainNavigation extends StatefulWidget {
   final bool isDarkMode;
@@ -35,8 +35,10 @@ class _MainNavigationState extends State<MainNavigation> {
   void initState() {
     super.initState();
     _checkPremiumStatus();
+    if (!_isPremium) {
     _loadBannerAd();
     _loadInterstitialAd();
+  }
   }
 
   void _checkPremiumStatus() {
@@ -132,7 +134,7 @@ class _MainNavigationState extends State<MainNavigation> {
       const StatisticsScreen(),
       const TopicsScreen(),
       const BooksScreen(),
-      const PomodoroScreen(),
+      const AgendaScreen(),
     ];
 
     return Scaffold(
@@ -151,117 +153,130 @@ class _MainNavigationState extends State<MainNavigation> {
         ],
       ),
       bottomNavigationBar: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(25),
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: Colors.black.withOpacity(0.1),
               blurRadius: 20,
               offset: const Offset(0, -5),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(25),
-          child: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: _onTabTapped,
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: AppTheme.primaryPurple,
-            unselectedItemColor: Colors.grey[400],
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            elevation: 0,
-            selectedLabelStyle: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 12,
+          borderRadius: BorderRadius.circular(30),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).cardColor,
+                  Theme.of(context).cardColor.withOpacity(0.9),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
             ),
-            unselectedLabelStyle: const TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 11,
+            child: BottomNavigationBar(
+              currentIndex: _currentIndex,
+              onTap: _onTabTapped,
+              type: BottomNavigationBarType.fixed,
+              selectedItemColor: AppTheme.primaryPurple,
+              unselectedItemColor: Colors.grey[400],
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              selectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 11,
+              ),
+              items: [
+                BottomNavigationBarItem(
+                  icon: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: _currentIndex == 0 ? AppTheme.primaryGradient : null,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(
+                      _currentIndex == 0 ? Icons.home : Icons.home_outlined,
+                      color: _currentIndex == 0 ? Colors.white : Colors.grey[400],
+                      size: 22,
+                    ),
+                  ),
+                  label: 'Ana Sayfa',
+                ),
+                BottomNavigationBarItem(
+                  icon: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: _currentIndex == 1 ? AppTheme.primaryGradient : null,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(
+                      _currentIndex == 1 ? Icons.bar_chart : Icons.bar_chart_outlined,
+                      color: _currentIndex == 1 ? Colors.white : Colors.grey[400],
+                      size: 22,
+                    ),
+                  ),
+                  label: 'İstatistikler',
+                ),
+                BottomNavigationBarItem(
+                  icon: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: _currentIndex == 2 ? AppTheme.primaryGradient : null,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(
+                      _currentIndex == 2 ? Icons.book : Icons.book_outlined,
+                      color: _currentIndex == 2 ? Colors.white : Colors.grey[400],
+                      size: 22,
+                    ),
+                  ),
+                  label: 'Konular',
+                ),
+                BottomNavigationBarItem(
+                  icon: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: _currentIndex == 3 ? AppTheme.primaryGradient : null,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(
+                      _currentIndex == 3 ? Icons.library_books : Icons.library_books_outlined,
+                      color: _currentIndex == 3 ? Colors.white : Colors.grey[400],
+                      size: 22,
+                    ),
+                  ),
+                  label: 'Kitaplarım',
+                ),
+                BottomNavigationBarItem(
+                  icon: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: _currentIndex == 4 ? AppTheme.primaryGradient : null,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(
+                      _currentIndex == 4 ? Icons.event : Icons.event_outlined,
+                      color: _currentIndex == 4 ? Colors.white : Colors.grey[400],
+                      size: 22,
+                    ),
+                  ),
+                  label: 'Ajandam',
+                ),
+              ],
             ),
-            items: [
-              BottomNavigationBarItem(
-                icon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: _currentIndex == 0 
-                      ? BoxDecoration(
-                          gradient: AppTheme.primaryGradient,
-                          borderRadius: BorderRadius.circular(12),
-                        )
-                      : null,
-                  child: Icon(
-                    _currentIndex == 0 ? Icons.home : Icons.home_outlined,
-                    color: _currentIndex == 0 ? Colors.white : Colors.grey[400],
-                  ),
-                ),
-                label: 'Ana Sayfa',
-              ),
-              BottomNavigationBarItem(
-                icon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: _currentIndex == 1 
-                      ? BoxDecoration(
-                          gradient: AppTheme.primaryGradient,
-                          borderRadius: BorderRadius.circular(12),
-                        )
-                      : null,
-                  child: Icon(
-                    _currentIndex == 1 ? Icons.bar_chart : Icons.bar_chart_outlined,
-                    color: _currentIndex == 1 ? Colors.white : Colors.grey[400],
-                  ),
-                ),
-                label: 'İstatistikler',
-              ),
-              BottomNavigationBarItem(
-                icon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: _currentIndex == 2 
-                      ? BoxDecoration(
-                          gradient: AppTheme.primaryGradient,
-                          borderRadius: BorderRadius.circular(12),
-                        )
-                      : null,
-                  child: Icon(
-                    _currentIndex == 2 ? Icons.book : Icons.book_outlined,
-                    color: _currentIndex == 2 ? Colors.white : Colors.grey[400],
-                  ),
-                ),
-                label: 'Konular',
-              ),
-              BottomNavigationBarItem(
-                icon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: _currentIndex == 3 
-                      ? BoxDecoration(
-                          gradient: AppTheme.primaryGradient,
-                          borderRadius: BorderRadius.circular(12),
-                        )
-                      : null,
-                  child: Icon(
-                    _currentIndex == 3 ? Icons.library_books : Icons.library_books_outlined,
-                    color: _currentIndex == 3 ? Colors.white : Colors.grey[400],
-                  ),
-                ),
-                label: 'Kitaplarım',
-              ),
-              BottomNavigationBarItem(
-                icon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: _currentIndex == 4 
-                      ? BoxDecoration(
-                          gradient: AppTheme.primaryGradient,
-                          borderRadius: BorderRadius.circular(12),
-                        )
-                      : null,
-                  child: Icon(
-                    _currentIndex == 4 ? Icons.timer : Icons.timer_outlined,
-                    color: _currentIndex == 4 ? Colors.white : Colors.grey[400],
-                  ),
-                ),
-                label: 'Pomodoro',
-              ),
-            ],
           ),
         ),
       ),

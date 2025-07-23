@@ -22,6 +22,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   DateTime _yksDate = AppConstants.yksDate;
   bool _isPremium = false;
+  bool _notificationsEnabled = true;
 
   @override
   void initState() {
@@ -33,6 +34,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       _yksDate = StorageService.getYksDate() ?? AppConstants.yksDate;
       _isPremium = StorageService.getPremiumStatus();
+      _notificationsEnabled = StorageService.getNotificationEnabled();
     });
   }
 
@@ -160,16 +162,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: widget.onThemeChanged,
               ),
               const Divider(height: 1),
-              _buildSettingsTile(
-                icon: Icons.notifications,
-                title: 'Bildirimler',
-                subtitle: 'Hatırlatma ve motivasyon bildirimleri',
-                onTap: () {
-                  // TODO: Bildirim ayarları
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Bildirim ayarları yakında!')),
-                  );
-                },
+              ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryPurple.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.notifications,
+                    color: AppTheme.primaryPurple,
+                    size: 20,
+                  ),
+                ),
+                title: const Text(
+                  'Bildirimler',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: const Text('Ajanda hatırlatıcıları'),
+                trailing: Switch(
+                  value: _notificationsEnabled,
+                  onChanged: (value) async {
+                    setState(() {
+                      _notificationsEnabled = value;
+                    });
+                    await StorageService.setNotificationEnabled(value);
+                  },
+                  activeColor: AppTheme.primaryPurple,
+                ),
               ),
             ],
           ),
@@ -202,25 +223,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   );
                 },
-              ),
-              const Divider(height: 1),
-              _buildSettingsTile(
-                icon: Icons.backup,
-                title: 'Verileri Yedekle',
-                subtitle: 'Verilerinizi yedekleyin ve geri yükleyin',
-                onTap: () {
-                  // TODO: Yedekleme sistemi
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Yedekleme özelliği yakında!')),
-                  );
-                },
-              ),
-              const Divider(height: 1),
-              _buildSettingsTile(
-                icon: Icons.delete_sweep,
-                title: 'Verileri Temizle',
-                subtitle: 'Tüm verileri sıfırla',
-                onTap: _showClearDataDialog,
               ),
             ],
           ),
@@ -409,35 +411,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const Divider(height: 1),
               _buildSettingsTile(
-                icon: Icons.privacy_tip,
-                title: 'Gizlilik Politikası',
-                subtitle: 'Verileriniz nasıl korunur',
-                onTap: () {
-                  // TODO: Gizlilik politikası
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Gizlilik politikası yakında!')),
-                  );
-                },
-              ),
-              const Divider(height: 1),
-              _buildSettingsTile(
-                icon: Icons.help,
-                title: 'Yardım ve Destek',
-                subtitle: 'SSS ve destek',
-                onTap: () {
-                  // TODO: Yardım sayfası
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Yardım sayfası yakında!')),
-                  );
-                },
-              ),
-              const Divider(height: 1),
-              _buildSettingsTile(
                 icon: Icons.star_rate,
                 title: 'Uygulamayı Değerlendir',
                 subtitle: 'Play Store\'da değerlendirin',
                 onTap: () {
-                  // TODO: Play Store rating
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Play Store\'a yönlendiriliyor...')),
                   );
@@ -485,7 +462,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       initialDate: _yksDate,
       firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
       locale: const Locale('tr', 'TR'),
     );
 
@@ -506,46 +483,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  void _showClearDataDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Verileri Temizle'),
-        content: const Text(
-          'Bu işlem tüm çalışma verilerinizi, kitaplarınızı ve ayarlarınızı silecektir. Bu işlem geri alınamaz!\n\nDevam etmek istediğinizden emin misiniz?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              // Tüm verileri temizle
-              final prefs = StorageService.prefs;
-              await prefs.clear();
-              
-              if (mounted) {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Tüm veriler temizlendi!'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-                Navigator.pop(context); // Settings sayfasından çık
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Temizle', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _purchasePremium() {
-    // TODO: Google Play In-App Purchase entegrasyonu
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -617,6 +555,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const Text('• Soru ve deneme girişi'),
         const Text('• İstatistiksel analiz'),
         const Text('• Konu ve kitap yönetimi'),
+        const Text('• Ajanda sistemi'),
         const Text('• Pomodoro timer'),
         const Text('• Net hesaplayıcı'),
       ],

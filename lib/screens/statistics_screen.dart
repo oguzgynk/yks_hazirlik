@@ -5,7 +5,6 @@ import '../utils/theme.dart';
 import '../services/storage_service.dart';
 import '../models/data_models.dart';
 
-
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
 
@@ -13,18 +12,29 @@ class StatisticsScreen extends StatefulWidget {
   State<StatisticsScreen> createState() => _StatisticsScreenState();
 }
 
-class _StatisticsScreenState extends State<StatisticsScreen> {
+class _StatisticsScreenState extends State<StatisticsScreen> with TickerProviderStateMixin {
   String _selectedChart = 'Çalışma Saati';
   String _selectedPeriod = 'Haftalık';
   String _selectedExamType = 'TYT'; // Deneme grafikleri için
   List<StudySession> _sessions = [];
   List<ExamResult> _examResults = [];
+  late TabController _examHistoryTabController;
 
   @override
   void initState() {
     super.initState();
+    _examHistoryTabController = TabController(length: 2, vsync: this);
     _loadData();
   }
+
+  @override
+void dispose() {
+  _examHistoryTabController.dispose();
+  // Bu satırları ekleyin:
+  _sessions.clear();
+  _examResults.clear();
+  super.dispose();
+}
 
   void _loadData() {
     setState(() {
@@ -32,7 +42,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       _examResults = StorageService.getExamResults();
     });
   }
-List<ExamResult> _getFilteredExamResults() {
+
+  List<ExamResult> _getFilteredExamResults() {
     final now = DateTime.now();
     DateTime startDate;
     
@@ -55,102 +66,105 @@ List<ExamResult> _getFilteredExamResults() {
       exam.examDate.isAfter(startDate) && 
       exam.examType == _selectedExamType
     ).toList();
-  }  Widget _buildExamHistory() {
+  }
+
+  List<ExamResult> _getExamResultsByType(String examType) {
+    return _examResults.where((exam) => exam.examType == examType).toList()
+      ..sort((a, b) => b.examDate.compareTo(a.examDate));
+  }
+
+  Widget _buildExamHistory() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Deneme Geçmişi 📋',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            Row(
-              children: ['TYT', 'AYT'].map((examType) {
-                final isSelected = _selectedExamType == examType;
-                return Padding(
-                  padding: const EdgeInsets.only(left: 4),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        setState(() {
-                          _selectedExamType = examType;
-                        });
-                      },
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: isSelected 
-                              ? (examType == 'TYT' ? Colors.blue : Colors.purple)
-                              : Colors.grey[200],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          examType,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: isSelected ? Colors.white : Colors.grey[600],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
+        Text(
+          'Deneme Geçmişi 📋',
+          style: Theme.of(context).textTheme.headlineSmall,
         ),
         const SizedBox(height: 16),
-        Card(
-          child: Column(
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(25),
+          ),
+          child: TabBar(
+            controller: _examHistoryTabController,
+            indicator: BoxDecoration(
+              borderRadius: BorderRadius.circular(25),
+              gradient: AppTheme.primaryGradient,
+            ),
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.grey[600],
+            labelStyle: const TextStyle(fontWeight: FontWeight.w600),
+            tabs: const [
+              Tab(text: 'TYT'),
+              Tab(text: 'AYT'),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        SizedBox(
+          height: 400,
+          child: TabBarView(
+            controller: _examHistoryTabController,
             children: [
-              if (_getFilteredExamResults().isEmpty)
-                Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.assignment_outlined,
-                        size: 64,
-                        color: Colors.grey[400],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Henüz $_selectedExamType denemesi bulunmuyor',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'İlk $_selectedExamType denemenizi girin ve burada görün',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[500],
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: _getFilteredExamResults().length,
-                  separatorBuilder: (context, index) => const Divider(height: 1),
-                  itemBuilder: (context, index) {
-                    final filteredExams = _getFilteredExamResults()..sort((a, b) => b.examDate.compareTo(a.examDate));
-                    final exam = filteredExams[index];
-                    return _buildExamTile(exam);
-                  },
-                ),
+              _buildExamTypeHistory('TYT'),
+              _buildExamTypeHistory('AYT'),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildExamTypeHistory(String examType) {
+    final exams = _getExamResultsByType(examType);
+    
+    if (exams.isEmpty) {
+      return Card(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.assignment_outlined,
+                  size: 64,
+                  color: Colors.grey[400],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Henüz $examType denemesi bulunmuyor',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'İlk $examType denemenizi girin ve burada görün',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[500],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Card(
+      child: ListView.separated(
+        shrinkWrap: true,
+        itemCount: exams.length,
+        separatorBuilder: (context, index) => const Divider(height: 1),
+        itemBuilder: (context, index) {
+          final exam = exams[index];
+          return _buildExamTile(exam);
+        },
+      ),
     );
   }
 
@@ -177,12 +191,14 @@ List<ExamResult> _getFilteredExamResults() {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            Text(
-              exam.totalNet.toStringAsFixed(1),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
+            FittedBox(
+              child: Text(
+                exam.totalNet.toStringAsFixed(1),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -191,25 +207,37 @@ List<ExamResult> _getFilteredExamResults() {
       title: Text(
         exam.examName,
         style: const TextStyle(fontWeight: FontWeight.w600),
+        overflow: TextOverflow.ellipsis,
       ),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Text(DateFormat('dd MMMM yyyy', 'tr_TR').format(exam.examDate)),
+          Text(
+            DateFormat('dd MMMM yyyy', 'tr_TR').format(exam.examDate),
+            overflow: TextOverflow.ellipsis,
+          ),
           const SizedBox(height: 4),
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
             children: [
               _buildMiniStat('D', exam.totalCorrect, Colors.green),
-              const SizedBox(width: 8),
               _buildMiniStat('Y', exam.totalWrong, Colors.red),
-              const SizedBox(width: 8),
               _buildMiniStat('B', exam.totalEmpty, Colors.orange),
-              const SizedBox(width: 8),
-              Text(
-                'Net: ${exam.totalNet.toStringAsFixed(1)}',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.primaryPurple,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryPurple.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'Net: ${exam.totalNet.toStringAsFixed(1)}',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.primaryPurple,
+                  ),
                 ),
               ),
             ],
@@ -294,6 +322,7 @@ List<ExamResult> _getFilteredExamResults() {
                           Text(
                             exam.examName,
                             style: Theme.of(context).textTheme.headlineSmall,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           Text(
                             DateFormat('dd MMMM yyyy', 'tr_TR').format(exam.examDate),
@@ -358,6 +387,7 @@ List<ExamResult> _getFilteredExamResults() {
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w600,
                                       ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                     Text(
                                       'D:${result.correctAnswers} Y:${result.wrongAnswers} B:${result.emptyAnswers}',
@@ -408,11 +438,13 @@ List<ExamResult> _getFilteredExamResults() {
         children: [
           Icon(icon, color: color, size: 24),
           const SizedBox(height: 8),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: color,
-              fontWeight: FontWeight.bold,
+          FittedBox(
+            child: Text(
+              value,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: color,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           Text(
@@ -470,7 +502,7 @@ List<ExamResult> _getFilteredExamResults() {
         startDate = DateTime(now.year, now.month, 1);
         break;
       case 'Tümü':
-        startDate = DateTime(2020, 1, 1); // Çok eskiden başlat
+        startDate = DateTime(2020, 1, 1);
         break;
       default:
         startDate = now.subtract(Duration(days: now.weekday - 1));
@@ -521,19 +553,16 @@ List<ExamResult> _getFilteredExamResults() {
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 12),
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: charts.map((chart) {
                 final isSelected = _selectedChart == chart;
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: _buildSelector(chart, isSelected, () {
-                      setState(() {
-                        _selectedChart = chart;
-                      });
-                    }),
-                  ),
-                );
+                return _buildSelector(chart, isSelected, () {
+                  setState(() {
+                    _selectedChart = chart;
+                  });
+                });
               }).toList(),
             ),
             
@@ -547,19 +576,15 @@ List<ExamResult> _getFilteredExamResults() {
                 ),
               ),
               const SizedBox(height: 8),
-              Row(
+              Wrap(
+                spacing: 8,
                 children: ['TYT', 'AYT'].map((examType) {
                   final isSelected = _selectedExamType == examType;
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      child: _buildSelector(examType, isSelected, () {
-                        setState(() {
-                          _selectedExamType = examType;
-                        });
-                      }),
-                    ),
-                  );
+                  return _buildSelector(examType, isSelected, () {
+                    setState(() {
+                      _selectedExamType = examType;
+                    });
+                  });
                 }).toList(),
               ),
             ],
@@ -572,19 +597,15 @@ List<ExamResult> _getFilteredExamResults() {
   Widget _buildPeriodSelector() {
     final periods = ['Haftalık', 'Aylık', 'Tümü'];
     
-    return Row(
+    return Wrap(
+      spacing: 8,
       children: periods.map((period) {
         final isSelected = _selectedPeriod == period;
-        return Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: _buildSelector(period, isSelected, () {
-              setState(() {
-                _selectedPeriod = period;
-              });
-            }),
-          ),
-        );
+        return _buildSelector(period, isSelected, () {
+          setState(() {
+            _selectedPeriod = period;
+          });
+        });
       }).toList(),
     );
   }
@@ -596,7 +617,7 @@ List<ExamResult> _getFilteredExamResults() {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           decoration: BoxDecoration(
             gradient: isSelected ? AppTheme.primaryGradient : null,
             color: isSelected ? null : Colors.grey[200],
@@ -634,6 +655,7 @@ List<ExamResult> _getFilteredExamResults() {
                   child: Text(
                     chartTitle,
                     style: Theme.of(context).textTheme.headlineSmall,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 if (_selectedChart == 'Deneme Netlerim')
@@ -771,7 +793,7 @@ List<ExamResult> _getFilteredExamResults() {
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: 30,
+              reservedSize: 40,
               interval: 1,
               getTitlesWidget: (double value, TitleMeta meta) {
                 final index = value.toInt();
@@ -779,12 +801,15 @@ List<ExamResult> _getFilteredExamResults() {
                   final date = sortedDates[index];
                   return SideTitleWidget(
                     axisSide: meta.axisSide,
-                    child: Text(
-                      '${date.day}/${date.month}',
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 10,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        '${date.day}/${date.month}',
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                        ),
                       ),
                     ),
                   );
@@ -931,7 +956,7 @@ List<ExamResult> _getFilteredExamResults() {
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: 40,
+              reservedSize: 50,
               interval: 1,
               getTitlesWidget: (double value, TitleMeta meta) {
                 final index = value.toInt();
@@ -941,27 +966,32 @@ List<ExamResult> _getFilteredExamResults() {
                     axisSide: meta.axisSide,
                     child: Padding(
                       padding: const EdgeInsets.only(top: 8),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '${exam.examDate.day}/${exam.examDate.month}',
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 10,
+                      child: SizedBox(
+                        width: 60,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${exam.examDate.day}/${exam.examDate.month}',
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 9,
+                              ),
                             ),
-                          ),
-                          Text(
-                            exam.examName.length > 8 
-                                ? '${exam.examName.substring(0, 8)}...'
-                                : exam.examName,
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 8,
+                            Text(
+                              exam.examName.length > 6 
+                                  ? '${exam.examName.substring(0, 6)}...'
+                                  : exam.examName,
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 8,
+                              ),
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   );
@@ -1046,6 +1076,7 @@ List<ExamResult> _getFilteredExamResults() {
     final totalQuestions = filteredSessions.fold(0, (sum, session) => 
         sum + session.correctAnswers + session.wrongAnswers + session.emptyAnswers);
     final examCount = filteredSessions.where((s) => s.isExam).length;
+    final totalStudyHours = (totalStudyTime / 60).toStringAsFixed(1);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1060,7 +1091,7 @@ List<ExamResult> _getFilteredExamResults() {
             Expanded(
               child: _buildSummaryCard(
                 'Çalışma Süresi',
-                '${(totalStudyTime / 60).toStringAsFixed(1)}h',
+                '${totalStudyHours}h',
                 Icons.access_time,
                 Colors.blue,
               ),
@@ -1081,7 +1112,7 @@ List<ExamResult> _getFilteredExamResults() {
           children: [
             Expanded(
               child: _buildSummaryCard(
-                'Toplam Çözülen Soru',
+                'Çözülen Soru',
                 totalQuestions.toString(),
                 Icons.quiz_outlined,
                 Colors.purple,
@@ -1105,7 +1136,7 @@ List<ExamResult> _getFilteredExamResults() {
   Widget _buildSummaryCard(String title, String value, IconData icon, Color color) {
     return Card(
       child: Container(
-        height: 120, // Sabit yükseklik
+        height: 120,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),

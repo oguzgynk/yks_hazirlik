@@ -111,8 +111,14 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
           labelColor: AppTheme.primaryPurple,
           unselectedLabelColor: Colors.grey,
           tabs: const [
-            Tab(text: 'Hızlı Hesaplama'),
-            Tab(text: 'Detaylı Hesaplama'),
+            Tab(
+              icon: Icon(Icons.speed),
+              text: 'Hızlı Hesaplama',
+            ),
+            Tab(
+              icon: Icon(Icons.calculate),
+              text: 'Detaylı Hesaplama',
+            ),
           ],
         ),
       ),
@@ -132,58 +138,85 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
       child: Column(
         children: [
           Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
+            elevation: 8,
+            shadowColor: AppTheme.primaryPurple.withOpacity(0.3),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.primaryPurple.withOpacity(0.1),
+                    AppTheme.primaryBlue.withOpacity(0.05),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Hızlı Net Hesaplama',
-                    style: Theme.of(context).textTheme.headlineSmall,
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          gradient: AppTheme.primaryGradient,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.speed,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Hızlı Net Hesaplama',
+                              style: Theme.of(context).textTheme.headlineSmall,
+                            ),
+                            Text(
+                              'Doğru ve yanlış sayısını girerek hızlıca net hesaplayın',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Doğru ve yanlış sayısını girerek hızlıca net hesaplayın',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                   Row(
                     children: [
                       Expanded(
-                        child: TextField(
+                        child: _buildInputField(
                           controller: _quickCorrectController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Doğru',
-                            prefixIcon: Icon(Icons.check_circle, color: Colors.green),
-                            border: OutlineInputBorder(),
-                          ),
+                          label: 'Doğru',
+                          icon: Icons.check_circle,
+                          color: Colors.green,
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: TextField(
+                        child: _buildInputField(
                           controller: _quickWrongController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Yanlış',
-                            prefixIcon: Icon(Icons.cancel, color: Colors.red),
-                            border: OutlineInputBorder(),
-                          ),
+                          label: 'Yanlış',
+                          icon: Icons.cancel,
+                          color: Colors.red,
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: TextField(
+                        child: _buildInputField(
                           controller: _quickEmptyController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Boş',
-                            prefixIcon: Icon(Icons.radio_button_unchecked, color: Colors.orange),
-                            border: OutlineInputBorder(),
-                          ),
+                          label: 'Boş',
+                          icon: Icons.radio_button_unchecked,
+                          color: Colors.orange,
                         ),
                       ),
                     ],
@@ -192,47 +225,65 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           
           // Sonuç kartı
           Card(
+            elevation: 12,
+            shadowColor: AppTheme.primaryPurple.withOpacity(0.4),
             child: Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(30),
+              padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
                 gradient: AppTheme.primaryGradient,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
                 children: [
-                  const Icon(
-                    Icons.calculate,
-                    color: Colors.white,
-                    size: 40,
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: const Icon(
+                      Icons.calculate,
+                      color: Colors.white,
+                      size: 48,
+                    ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   const Text(
                     'Net Sonuç',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 20,
+                      fontSize: 24,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Text(
                     _quickNet.toStringAsFixed(2),
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 48,
+                      fontSize: 56,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Text(
-                    'Net = Doğru - (Yanlış ÷ 4)',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      'Net = Doğru - (Yanlış ÷ 4)',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ],
@@ -240,23 +291,30 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
             ),
           ),
           
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           
           // İpuçları kartı
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Icon(
-                        Icons.lightbulb,
-                        color: Colors.amber,
-                        size: 24,
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.amber,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.lightbulb,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 12),
                       Text(
                         'Net Hesaplama İpuçları',
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -266,15 +324,48 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
                     ],
                   ),
                   const SizedBox(height: 16),
-                  _buildTip('• Her 4 yanlış 1 doğruyu götürür'),
-                  _buildTip('• Boş sorular hesaplamayı etkilemez'),
-                  _buildTip('• Net sayınız negatif de olabilir'),
-                  _buildTip('• Emin olmadığınız sorularda risk almayın'),
+                  _buildTip('Her 4 yanlış 1 doğruyu götürür'),
+                  _buildTip('Boş sorular hesaplamayı etkilemez'),
+                  _buildTip('Net sayınız negatif de olabilir'),
+                  _buildTip('Emin olmadığınız sorularda risk almayın'),
+                  _buildTip('Yüksek net için doğru/yanlış dengesine dikkat edin'),
                 ],
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: TextInputType.number,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.bold,
+          fontSize: 18,
+        ),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: color),
+          prefixIcon: Icon(icon, color: color),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.all(16),
+        ),
       ),
     );
   }
@@ -290,7 +381,7 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
           const SizedBox(height: 20),
           _buildSubjectInputs(),
           const SizedBox(height: 20),
-          _buildClearButton(),
+          _buildActionButtons(),
         ],
       ),
     );
@@ -299,15 +390,25 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
   Widget _buildExamTypeSelector() {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Sınav Türü',
-              style: Theme.of(context).textTheme.headlineSmall,
+            Row(
+              children: [
+                Icon(
+                  Icons.quiz,
+                  color: AppTheme.primaryPurple,
+                  size: 24,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Sınav Türü',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+              ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -342,11 +443,14 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
             gradient: isSelected ? AppTheme.primaryGradient : null,
             color: isSelected ? null : Colors.grey[200],
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? Colors.transparent : Colors.grey[300]!,
+            ),
           ),
           child: Text(
             text,
@@ -354,6 +458,7 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
             style: TextStyle(
               color: isSelected ? Colors.white : Colors.grey[600],
               fontWeight: FontWeight.w600,
+              fontSize: 16,
             ),
           ),
         ),
@@ -363,26 +468,35 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
 
   Widget _buildResultCard() {
     return Card(
+      elevation: 8,
+      shadowColor: AppTheme.secondaryPurple.withOpacity(0.3),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           gradient: AppTheme.secondaryGradient,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
           children: [
-            const Icon(
-              Icons.assignment_turned_in,
-              color: Colors.white,
-              size: 32,
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(50),
+              ),
+              child: const Icon(
+                Icons.assignment_turned_in,
+                color: Colors.white,
+                size: 32,
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             const Text(
               'Toplam Net',
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -391,15 +505,24 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
               _totalNet.toStringAsFixed(2),
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 36,
+                fontSize: 42,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            Text(
-              '${_selectedExamType} - Toplam $_totalQuestions soru',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '${_selectedExamType} - Toplam $_totalQuestions soru',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],
@@ -412,9 +535,12 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Ders Bazlı Giriş',
-          style: Theme.of(context).textTheme.headlineSmall,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Text(
+            'Ders Bazlı Giriş',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
         ),
         const SizedBox(height: 16),
         ..._questionCounts.entries.map((entry) {
@@ -430,97 +556,101 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
                 children: [
                   Row(
                     children: [
-                      Icon(
-                        _getSubjectIcon(subject),
-                        color: AppTheme.primaryPurple,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        subject,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryPurple.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          _getSubjectIcon(subject),
+                          color: AppTheme.primaryPurple,
+                          size: 20,
                         ),
                       ),
-                      const Spacer(),
-                      Text(
-                        '$totalQuestions soru',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          subject,
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '$totalQuestions soru',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildSubjectInputField(
+                          subject: subject,
+                          type: 'correct',
+                          label: 'Doğru',
+                          icon: Icons.check_circle,
+                          color: Colors.green,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildSubjectInputField(
+                          subject: subject,
+                          type: 'wrong',
+                          label: 'Yanlış',
+                          icon: Icons.cancel,
+                          color: Colors.red,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: _buildSubjectInputField(
+                          subject: subject,
+                          type: 'empty',
+                          label: 'Boş',
+                          icon: Icons.radio_button_unchecked,
+                          color: Colors.orange,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Doğru',
-                            prefixIcon: Icon(Icons.check_circle, color: Colors.green),
-                            border: OutlineInputBorder(),
-                            isDense: true,
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryPurple.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Net: ${(_subjectInputs[subject]!['correct']! - (_subjectInputs[subject]!['wrong']! / 4)).toStringAsFixed(2)}',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.primaryPurple,
                           ),
-                          onChanged: (value) {
-                            _subjectInputs[subject]!['correct'] = int.tryParse(value) ?? 0;
-                            _calculateTotals();
-                          },
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: TextField(
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Yanlış',
-                            prefixIcon: Icon(Icons.cancel, color: Colors.red),
-                            border: OutlineInputBorder(),
-                            isDense: true,
+                        Text(
+                          'Toplam: ${_subjectInputs[subject]!['correct']! + _subjectInputs[subject]!['wrong']! + _subjectInputs[subject]!['empty']!}/$totalQuestions',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Colors.grey[600],
                           ),
-                          onChanged: (value) {
-                            _subjectInputs[subject]!['wrong'] = int.tryParse(value) ?? 0;
-                            _calculateTotals();
-                          },
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: TextField(
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Boş',
-                            prefixIcon: Icon(Icons.radio_button_unchecked, color: Colors.orange),
-                            border: OutlineInputBorder(),
-                            isDense: true,
-                          ),
-                          onChanged: (value) {
-                            _subjectInputs[subject]!['empty'] = int.tryParse(value) ?? 0;
-                            _calculateTotals();
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Net: ${(_subjectInputs[subject]!['correct']! - (_subjectInputs[subject]!['wrong']! / 4)).toStringAsFixed(2)}',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.primaryPurple,
-                        ),
-                      ),
-                      Text(
-                        'Toplam: ${_subjectInputs[subject]!['correct']! + _subjectInputs[subject]!['wrong']! + _subjectInputs[subject]!['empty']!}/$totalQuestions',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -531,54 +661,129 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
     );
   }
 
-  Widget _buildClearButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () {
-          setState(() {
-            for (String subject in _subjectInputs.keys) {
-              _subjectInputs[subject] = {
-                'correct': 0,
-                'wrong': 0,
-                'empty': 0,
-              };
-            }
-          });
-          _calculateTotals();
-          
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Tüm değerler temizlendi'),
-              backgroundColor: Colors.orange,
-            ),
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          backgroundColor: Colors.orange,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+  Widget _buildSubjectInputField({
+    required String subject,
+    required String type,
+    required String label,
+    required IconData icon,
+    required Color color,
+  }) {
+    return TextField(
+      keyboardType: TextInputType.number,
+      textAlign: TextAlign.center,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: color, fontSize: 12),
+        prefixIcon: Icon(icon, color: color, size: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: color.withOpacity(0.3)),
         ),
-        child: const Text(
-          'Temizle',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: color),
         ),
+        contentPadding: const EdgeInsets.symmetric(vertical: 8),
+        isDense: true,
       ),
+      onChanged: (value) {
+        _subjectInputs[subject]![type] = int.tryParse(value) ?? 0;
+        _calculateTotals();
+      },
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () {
+              setState(() {
+                for (String subject in _subjectInputs.keys) {
+                  _subjectInputs[subject] = {
+                    'correct': 0,
+                    'wrong': 0,
+                    'empty': 0,
+                  };
+                }
+              });
+              _calculateTotals();
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Tüm değerler temizlendi'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+            },
+            icon: const Icon(Icons.clear_all),
+            label: const Text('Temizle'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () {
+              // Sonuçları paylaş
+              final text = 'YKS Net Hesaplayıcı Sonucu:\n'
+                  '$_selectedExamType - Toplam Net: ${_totalNet.toStringAsFixed(2)}\n'
+                  'Toplam Soru: $_totalQuestions';
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Sonuç kopyalandı: ${_totalNet.toStringAsFixed(2)} net'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            },
+            icon: const Icon(Icons.share),
+            label: const Text('Paylaş'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryPurple,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildTip(String tip) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Text(
-        tip,
-        style: Theme.of(context).textTheme.bodyMedium,
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 6),
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: AppTheme.primaryPurple,
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              tip,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
+        ],
       ),
     );
   }

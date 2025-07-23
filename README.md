@@ -5,47 +5,63 @@ YKS sınavına hazırlanan öğrenciler için geliştirilmiş kapsamlı bir mobi
 ## 📱 Özellikler
 
 ### 🏠 Ana Sayfa
-- YKS'ye kalan gün sayısı (geri sayım)
-- Günlük motivasyon sözleri (50+ ünlü kişi sözü)
-- Günlük hedef takibi (çalışma süresi ve soru sayısı)
-- Bugünkü çalışma istatistikleri
-- Hızlı erişim butonları (Çalışma Saati, Soru Gir, Deneme Gir)
+- YKS'ye kalan gün sayısı (geri sayım) - **YKS tarihi: 20 Haziran 2026**
+- Günlük motivasyon sözleri (50+ ünlü kişi sözü) - **Kompakt tasarım**
+- Günlük hedef takibi (çalışma süresi ve soru sayısı) - **Bugünkü Hedeflerim bölümü**
+- Hızlı erişim butonları (Çalışma Saati, Soru Gir, Deneme Gir) - **Geliştirilmiş tasarım**
+- **Araçlar bölümü** (Net Hesaplayıcı, Pomodoro Timer)
 
 ### 📊 İstatistikler
 - Çizgi grafiklerle görsel analiz
 - 3 farklı grafik türü: Deneme Netlerim, Çalışma Saati, Çözülen Soru
 - Haftalık, aylık ve tüm zamanlar filtreleme
-- Dönem özeti kartları
+- **Dönem özeti kartları - Düzeltilmiş görünüm**
+- **Deneme geçmişi - TYT ve AYT sekmeleri**
+- **Overflow hataları düzeltildi**
 
 ### 📚 Konular
 - TYT ve AYT konu listesi
 - Ders bazlı ilerleme takibi
 - Konu tamamlama sistemi
 - Her konudan çözülen soru sayısı takibi
+- **Geliştirilmiş animasyonlar ve tasarım**
 
 ### 📖 Kitaplarım
 - Kişisel kitap kütüphanesi
 - Otomatik konu ataması
 - Kitap tamamlanma yüzdesi
 - Konu ekleme/çıkarma özelliği
+- **Kitap türüne göre renk kodlama (TYT-mavi, AYT-mor)**
 
-### ⏰ Pomodoro Timer
+### 📅 Ajandam *(YENİ!)*
+- **Günlük ve haftalık görünüm**
+- **Konu çalışma planlaması** (TYT/AYT seçimi)
+- **Soru çözme aktiviteleri** (kitap/konu seçimi)
+- **Diğer aktiviteler** (özel başlık)
+- **Tarih ve saat seçimi**
+- **Kitap konusu otomatik tamamlama** özelliği
+- **Aktivite detayları ve tamamlama takibi**
+
+### ⏰ Pomodoro Timer *(GELİŞTİRİLDİ)*
 - Varsayılan 25dk çalışma, 5dk dinlenme
 - Özelleştirilebilir süreler
+- **Geliştirilmiş görsel tasarım ve animasyonlar**
+- **Bugünkü istatistikler**
 - Çalışma süresini istatistiklere dahil etme seçeneği
-- Görsel geri sayım ve animasyonlar
 
-### 🧮 Net Hesaplayıcı
-- Hızlı net hesaplama aracı
-- Detaylı ders bazlı hesaplama
+### 🧮 Net Hesaplayıcı *(GELİŞTİRİLDİ)*
+- **Hızlı hesaplama** ve **Detaylı hesaplama** sekmeleri
+- **Geliştirilmiş kullanıcı arayüzü**
+- **Net hesaplama ipuçları**
 - TYT ve AYT desteği
-- Hesaplama ipuçları
+- **Responsive tasarım**
 
-### ⚙️ Ayarlar
+### ⚙️ Ayarlar *(GÜNCELLENDİ)*
 - Karanlık/Açık mod
-- YKS tarihi ayarlama
+- **YKS tarihi ayarlama (varsayılan: 20 Haziran 2026)**
+- **Bildirim ayarları** - Ajanda hatırlatıcıları
 - Premium satın alma
-- Veri yönetimi
+- **Temizlenmiş menü** (gereksiz seçenekler kaldırıldı)
 
 ## 🎯 Teknik Özellikler
 
@@ -53,6 +69,7 @@ YKS sınavına hazırlanan öğrenciler için geliştirilmiş kapsamlı bir mobi
 - Tüm veriler cihazın yerel depolamasında (SharedPreferences)
 - Çalışma oturumları, kitap bilgileri, konu ilerlemeleri
 - Deneme sonuçları ve istatistikler
+- **Ajenda aktiviteleri** *(YENİ!)*
 
 ### 💰 Monetizasyon
 - Google AdMob banner reklamları
@@ -60,11 +77,12 @@ YKS sınavına hazırlanan öğrenciler için geliştirilmiş kapsamlı bir mobi
 - 200₺ ile premium (reklam kaldırma)
 - Google Play In-App Purchase entegrasyonu
 
-### 🎨 Tasarım
+### 🎨 Tasarım *(GELİŞTİRİLDİ)*
 - Material Design 3 uyumlu
 - Mor-mavi gradyan tema
 - Karanlık mod desteği
-- Animasyonlar ve geçiş efektleri
+- **Geliştirilmiş animasyonlar** ve geçiş efektleri
+- **Yuvarlatılmış bottom navigation**
 - Responsive tasarım (tüm Android ekranları)
 
 ### 📱 Platformlar
@@ -118,25 +136,28 @@ flutter build appbundle --release
 lib/
 ├── main.dart                 # Ana uygulama dosyası
 ├── models/                   # Veri modelleri
-│   └── data_models.dart
+│   └── data_models.dart      # Güncellenmiş (AgendaActivity eklendi)
 ├── screens/                  # Ekranlar
-│   ├── home_screen.dart
-│   ├── statistics_screen.dart
-│   ├── topics_screen.dart
-│   ├── books_screen.dart
-│   ├── pomodoro_screen.dart
-│   ├── settings_screen.dart
-│   ├── question_entry_screen.dart
-│   ├── exam_entry_screen.dart
-│   ├── study_time_entry_screen.dart
-│   ├── net_calculator_screen.dart
-│   └── main_navigation.dart
+│   ├── home_screen.dart      # Güncellenmiş (araçlar bölümü, kompakt tasarım)
+│   ├── statistics_screen.dart # Güncellenmiş (overflow düzeltildi, TYT/AYT sekmeleri)
+│   ├── topics_screen.dart    # Güncellenmiş (geliştirilmiş tasarım)
+│   ├── books_screen.dart     # Güncellenmiş (renk kodlama)
+│   ├── agenda_screen.dart    # YENİ! (ajanda sistemi)
+│   ├── pomodoro_screen.dart  # Güncellenmiş (geliştirilmiş tasarım)
+│   ├── settings_screen.dart  # Güncellenmiş (temizlenmiş menü)
+│   ├── question_entry_screen.dart # Güncellenmiş
+│   ├── exam_entry_screen.dart     # Güncellenmiş
+│   ├── study_time_entry_screen.dart # Güncellenmiş
+│   ├── net_calculator_screen.dart   # Güncellenmiş (iki sekme)
+│   └── main_navigation.dart  # Güncellenmiş (yuvarlatılmış tasarım)
 ├── services/                 # Servisler
-│   ├── storage_service.dart
+│   ├── storage_service.dart  # Güncellenmiş (ajenda metodları eklendi)
 │   └── ad_service.dart
 └── utils/                    # Yardımcı dosyalar
-    ├── constants.dart
+    ├── constants.dart        # Güncellenmiş (YKS tarihi 2026)
     └── theme.dart
+test/
+└── widget_test.dart
 ```
 
 ## 📦 Kullanılan Paketler
@@ -155,7 +176,7 @@ lib/
 
 ### Yardımcı Paketler
 - `intl` - Tarih/saat formatlama
-- `flutter_local_notifications` - Bildirimler
+- `flutter_local_notifications` - Bildirimler *(Ajanda hatırlatıcıları için)*
 
 ## 🎯 Konu Listesi
 
@@ -222,6 +243,23 @@ static const String interstitialAdUnitId = 'ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXX
 
 ## 📊 Veri Yapısı
 
+### Ajenda Aktivitesi *(YENİ!)*
+```dart
+class AgendaActivity {
+  final String id;
+  final String title;
+  final AgendaActivityType type; // studyTopic, solveQuestions, other
+  final DateTime dateTime;
+  final int duration; // dakika
+  final bool isCompleted;
+  final String? examType; // TYT/AYT
+  final String? subject; // Ders
+  final String? topic; // Konu
+  final String? bookId; // Kitap ID'si
+  final bool autoCompleteBookTopic; // Kitap konusunu otomatik tamamla
+}
+```
+
 ### Çalışma Oturumu
 ```dart
 class StudySession {
@@ -268,11 +306,23 @@ class Book {
 6. Internal testing ile test edin
 7. Production'a yayınlayın
 
-## 🐛 Bilinen Sorunlar
+## 🐛 Düzeltilen Sorunlar
 
-- [ ] Çok fazla veri olduğunda grafik performansı
-- [ ] Android 14'te bildirim izinleri
-- [ ] Bazı cihazlarda reklam yüklenme gecikmesi
+- ✅ Ana sayfa YKS tarihi ayarlanamama sorunu
+- ✅ İstatistikler sayfasındaki overflow hataları
+- ✅ Deneme geçmişinde TYT/AYT görünüm sorunu
+- ✅ Bottom navigation tasarım iyileştirmeleri
+- ✅ Motivasyon kartının çok yer kaplaması
+
+## 🆕 Yeni Özellikler (v2.0)
+
+- ✅ **Ajanda sistemi** - Günlük/haftalık planlama
+- ✅ **Geliştirilmiş ana sayfa** - Kompakt tasarım
+- ✅ **Net hesaplayıcı geliştirmeleri** - Hızlı/Detaylı sekmeler
+- ✅ **Pomodoro timer geliştirmeleri** - Görsel iyileştirmeler
+- ✅ **Yuvarlatılmış bottom navigation**
+- ✅ **Bildirim sistemi** - Ajenda hatırlatıcıları
+- ✅ **Kitap sistemi geliştirmeleri** - Renk kodlama
 
 ## 🔄 Geliştirilmesi Planlanan Özellikler
 
@@ -282,6 +332,7 @@ class Book {
 - [ ] Sesli hatırlatıcılar
 - [ ] Widget desteği
 - [ ] iOS sürümü
+- [ ] Gelişmiş bildirim sistemi
 
 ## 🤝 Katkıda Bulunma
 
@@ -309,4 +360,4 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosy
 
 ---
 
-**YKS Hazırlık Uygulaması** ile başarıya giden yolda öğrencilerin yanındayız! 🎯📚
+**YKS Hazırlık Uygulaması v2.0** ile başarıya giden yolda öğrencilerin yanındayız! 🎯📚✨

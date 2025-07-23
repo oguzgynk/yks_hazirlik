@@ -1,8 +1,8 @@
 import '../models/data_models.dart';
 
 class AppConstants {
-  // YKS Tarihi (2025)
-  static DateTime yksDate = DateTime(2025, 6, 14); // YKS genellikle Haziran'da
+  // YKS Tarihi (2026)
+  static DateTime yksDate = DateTime(2026, 6, 20); // 20 Haziran 2026
   
   // AdMob IDs (Test IDs)
   static const String bannerAdUnitId = 'ca-app-pub-3940256099942544/6300978111';

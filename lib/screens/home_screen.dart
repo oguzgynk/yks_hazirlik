@@ -10,6 +10,9 @@ import 'settings_screen.dart';
 import 'question_entry_screen.dart';
 import 'exam_entry_screen.dart';
 import 'study_time_entry_screen.dart';
+import 'net_calculator_screen.dart';
+import 'pomodoro_screen.dart';
+
 
 class HomeScreen extends StatefulWidget {
   final bool isDarkMode;
@@ -104,14 +107,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 _buildHeader(),
                 const SizedBox(height: 24),
                 _buildCountdownCard(),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 _buildMotivationCard(),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 _buildGoalsCard(),
-                const SizedBox(height: 24),
-                _buildTodayStats(),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 _buildQuickActions(),
+                const SizedBox(height: 20),
+                _buildToolsSection(),
                 const SizedBox(height: 100), // Bottom padding
               ],
             ),
@@ -262,7 +265,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
@@ -276,21 +279,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           const Icon(
             Icons.format_quote,
             color: AppTheme.primaryPurple,
-            size: 32,
+            size: 24,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
             _todaysQuote!.quote,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               fontStyle: FontStyle.italic,
-              height: 1.5,
+              height: 1.4,
             ),
             textAlign: TextAlign.center,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
             '- ${_todaysQuote!.author}',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: AppTheme.primaryPurple,
               fontWeight: FontWeight.w600,
             ),
@@ -420,82 +425,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildTodayStats() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Bugün Çözülenler 📊',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildStatItem(
-                    'Soru Sayısı',
-                    _todayQuestions.toString(),
-                    Icons.quiz,
-                    Colors.green,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildStatItem(
-                    'Çalışma Süresi',
-                    '${(_todayStudyMinutes / 60).toStringAsFixed(1)}h',
-                    Icons.access_time,
-                    Colors.blue,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatItem(String title, String value, IconData icon, Color color) {
-    return Container(
-      height: 120, // Sabit yükseklik
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 8),
-          FittedBox(
-            child: Text(
-              value,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Flexible(
-            child: Text(
-              title,
-              style: Theme.of(context).textTheme.bodySmall,
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 2,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildQuickActions() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -554,6 +483,50 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  Widget _buildToolsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Araçlar 🛠️',
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildToolButton(
+                'Net Hesaplayıcı',
+                Icons.calculate,
+                AppTheme.secondaryPurple,
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NetCalculatorScreen(),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildToolButton(
+                'Pomodoro Timer',
+                Icons.timer,
+                Colors.orange,
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PomodoroScreen(),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _buildActionButton(
     String title,
     IconData icon,
@@ -570,7 +543,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: Hero(
             tag: 'action_$title',
             child: Container(
-              height: 120, // Sabit yükseklik
+              height: 100,
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -596,7 +569,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     builder: (context, value, child) {
                       return Transform.scale(
                         scale: value,
-                        child: Icon(icon, color: Colors.white, size: 28),
+                        child: Icon(icon, color: Colors.white, size: 24),
                       );
                     },
                   ),
@@ -606,7 +579,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       title,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 12,
+                        fontSize: 11,
                         fontWeight: FontWeight.w600,
                       ),
                       textAlign: TextAlign.center,
@@ -616,6 +589,60 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 ],
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildToolButton(
+    String title,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            height: 80,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: color.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

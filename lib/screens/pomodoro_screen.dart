@@ -14,7 +14,9 @@ class PomodoroScreen extends StatefulWidget {
 class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStateMixin {
   late CountDownController _controller;
   late AnimationController _pulseController;
+  late AnimationController _glowController;
   late Animation<double> _pulseAnimation;
+  late Animation<double> _glowAnimation;
   
   PomodoroSettings _settings = PomodoroSettings();
   bool _isWorkTime = true;
@@ -37,15 +39,29 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
       vsync: this,
     );
     
+    _glowController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    
     _pulseAnimation = Tween<double>(
       begin: 1.0,
-      end: 1.1,
+      end: 1.05,
     ).animate(CurvedAnimation(
       parent: _pulseController,
       curve: Curves.easeInOut,
     ));
+
+    _glowAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _glowController,
+      curve: Curves.easeInOut,
+    ));
     
     _pulseController.repeat(reverse: true);
+    _glowController.repeat(reverse: true);
   }
 
   void _loadSettings() {
@@ -58,6 +74,7 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
   void dispose() {
     _controller.pause();
     _pulseController.dispose();
+    _glowController.dispose();
     super.dispose();
   }
 
@@ -75,7 +92,18 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
         actions: [
           IconButton(
             onPressed: _showSettingsDialog,
-            icon: const Icon(Icons.settings),
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryPurple.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.settings,
+                color: AppTheme.primaryPurple,
+                size: 20,
+              ),
+            ),
           ),
         ],
       ),
@@ -84,11 +112,11 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
         child: Column(
           children: [
             _buildStatusCard(),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             _buildTimer(),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             _buildControls(),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             _buildStats(),
           ],
         ),
@@ -98,9 +126,13 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
 
   Widget _buildStatusCard() {
     return Card(
+      elevation: 8,
+      shadowColor: _isWorkTime 
+          ? AppTheme.primaryPurple.withOpacity(0.3)
+          : AppTheme.accentBlue.withOpacity(0.3),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           gradient: _isWorkTime 
               ? AppTheme.primaryGradient 
@@ -109,28 +141,47 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
         ),
         child: Column(
           children: [
-            Icon(
-              _isWorkTime ? Icons.work : Icons.coffee,
-              color: Colors.white,
-              size: 32,
+            AnimatedBuilder(
+              animation: _glowAnimation,
+              builder: (context, child) {
+                return Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.white.withOpacity(0.3 * _glowAnimation.value),
+                        blurRadius: 20,
+                        spreadRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    _isWorkTime ? Icons.work_outline : Icons.coffee_outlined,
+                    color: Colors.white,
+                    size: 48,
+                  ),
+                );
+              },
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             Text(
               _isWorkTime ? 'Çalışma Zamanı' : 'Mola Zamanı',
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
               ),
             ),
+            const SizedBox(height: 8),
             Text(
               _isWorkTime 
-                  ? 'Odaklan ve çalış! 💪'
-                  : 'Biraz dinlen ve nefes al ☕',
+                  ? 'Odaklan ve hedefine odaklan! 🎯'
+                  : 'Rahatla ve enerjini topla ☕',
               style: const TextStyle(
                 color: Colors.white70,
-                fontSize: 14,
+                fontSize: 16,
               ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -140,8 +191,23 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
 
   Widget _buildTimer() {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
+      elevation: 12,
+      shadowColor: _isWorkTime 
+          ? AppTheme.primaryPurple.withOpacity(0.4)
+          : AppTheme.accentBlue.withOpacity(0.4),
+      child: Container(
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).cardColor,
+              Theme.of(context).cardColor.withOpacity(0.8),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
         child: Column(
           children: [
             AnimatedBuilder(
@@ -149,51 +215,74 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
               builder: (context, child) {
                 return Transform.scale(
                   scale: _isRunning && !_isPaused ? _pulseAnimation.value : 1.0,
-                  child: CircularCountDownTimer(
-                    duration: _currentDuration * 60,
-                    initialDuration: 0,
-                    controller: _controller,
-                    width: 250,
-                    height: 250,
-                    ringColor: Colors.grey[300]!,
-                    ringGradient: null,
-                    fillColor: _isWorkTime 
-                        ? AppTheme.primaryPurple 
-                        : AppTheme.accentBlue,
-                    fillGradient: _isWorkTime 
-                        ? AppTheme.primaryGradient 
-                        : AppTheme.secondaryGradient,
-                    backgroundColor: Colors.transparent,
-                    strokeWidth: 12.0,
-                    strokeCap: StrokeCap.round,
-                    textStyle: TextStyle(
-                      fontSize: 48,
-                      color: Theme.of(context).textTheme.headlineLarge?.color,
-                      fontWeight: FontWeight.bold,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: (_isWorkTime ? AppTheme.primaryPurple : AppTheme.accentBlue)
+                              .withOpacity(0.3),
+                          blurRadius: 20,
+                          spreadRadius: 5,
+                        ),
+                      ],
                     ),
-                    textFormat: CountdownTextFormat.MM_SS,
-                    isReverse: true, // Geri sayım
-                    isReverseAnimation: true, // Animasyon da geriye
-                    isTimerTextShown: true,
-                    autoStart: false,
-                    onStart: () {
-                      setState(() {
-                        _isRunning = true;
-                        _isPaused = false;
-                      });
-                    },
-                    onComplete: () {
-                      _onTimerComplete();
-                    },
+                    child: CircularCountDownTimer(
+                      duration: _currentDuration * 60,
+                      initialDuration: 0,
+                      controller: _controller,
+                      width: 280,
+                      height: 280,
+                      ringColor: Colors.grey[300]!,
+                      ringGradient: null,
+                      fillColor: _isWorkTime 
+                          ? AppTheme.primaryPurple 
+                          : AppTheme.accentBlue,
+                      fillGradient: _isWorkTime 
+                          ? AppTheme.primaryGradient 
+                          : AppTheme.secondaryGradient,
+                      backgroundColor: Colors.transparent,
+                      strokeWidth: 16.0,
+                      strokeCap: StrokeCap.round,
+                      textStyle: TextStyle(
+                        fontSize: 52,
+                        color: Theme.of(context).textTheme.headlineLarge?.color,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textFormat: CountdownTextFormat.MM_SS,
+                      isReverse: true,
+                      isReverseAnimation: true,
+                      isTimerTextShown: true,
+                      autoStart: false,
+                      onStart: () {
+                        setState(() {
+                          _isRunning = true;
+                          _isPaused = false;
+                        });
+                      },
+                      onComplete: () {
+                        _onTimerComplete();
+                      },
+                    ),
                   ),
                 );
               },
             ),
-            const SizedBox(height: 16),
-            Text(
-              '${_currentDuration} dakika',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Colors.grey[600],
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                color: (_isWorkTime ? AppTheme.primaryPurple : AppTheme.accentBlue)
+                    .withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '${_currentDuration} dakika',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: _isWorkTime ? AppTheme.primaryPurple : AppTheme.accentBlue,
+                ),
               ),
             ),
           ],
@@ -203,28 +292,42 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
   }
 
   Widget _buildControls() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _buildControlButton(
-          icon: _isRunning && !_isPaused ? Icons.pause : Icons.play_arrow,
-          label: _isRunning && !_isPaused ? 'Duraklat' : 'Başlat',
-          color: AppTheme.primaryPurple,
-          onTap: _toggleTimer,
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            Text(
+              'Kontroller',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildControlButton(
+                  icon: _isRunning && !_isPaused ? Icons.pause : Icons.play_arrow,
+                  label: _isRunning && !_isPaused ? 'Duraklat' : 'Başlat',
+                  color: AppTheme.primaryPurple,
+                  onTap: _toggleTimer,
+                ),
+                _buildControlButton(
+                  icon: Icons.stop,
+                  label: 'Durdur',
+                  color: Colors.red,
+                  onTap: _stopTimer,
+                ),
+                _buildControlButton(
+                  icon: Icons.skip_next,
+                  label: _isWorkTime ? 'Molaya Geç' : 'Çalışmaya Geç',
+                  color: AppTheme.accentBlue,
+                  onTap: _skipTimer,
+                ),
+              ],
+            ),
+          ],
         ),
-        _buildControlButton(
-          icon: Icons.stop,
-          label: 'Durdur',
-          color: Colors.red,
-          onTap: _stopTimer,
-        ),
-        _buildControlButton(
-          icon: Icons.skip_next,
-          label: _isWorkTime ? 'Molaya Geç' : 'Çalışmaya Geç',
-          color: AppTheme.accentBlue,
-          onTap: _skipTimer,
-        ),
-      ],
+      ),
     );
   }
 
@@ -240,33 +343,45 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
           color: Colors.transparent,
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(35),
             child: Container(
-              width: 60,
-              height: 60,
+              width: 70,
+              height: 70,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: color,
+                gradient: LinearGradient(
+                  colors: [color, color.withOpacity(0.8)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: color.withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
+                    color: color.withOpacity(0.4),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
               child: Icon(
                 icon,
                 color: Colors.white,
-                size: 28,
+                size: 32,
               ),
             ),
           ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall,
+        const SizedBox(height: 12),
+        SizedBox(
+          width: 80,
+          child: Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       ],
     );
@@ -275,15 +390,25 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
   Widget _buildStats() {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Bugünkü İstatistikler',
-              style: Theme.of(context).textTheme.headlineSmall,
+            Row(
+              children: [
+                Icon(
+                  Icons.analytics,
+                  color: AppTheme.primaryPurple,
+                  size: 24,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Bugünkü İstatistikler',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
@@ -305,30 +430,46 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             if (_settings.includeInStudyTime)
               Container(
-                padding: const EdgeInsets.all(12),
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryBlue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.primaryBlue.withOpacity(0.1),
+                      AppTheme.primaryPurple.withOpacity(0.1),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: AppTheme.primaryBlue.withOpacity(0.3),
                   ),
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.info_outline,
-                      color: AppTheme.primaryBlue,
-                      size: 20,
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryBlue,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(
+                        Icons.info_outline,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'Çalışma süreniz günlük istatistiklere dahil ediliyor',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: AppTheme.primaryBlue,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -343,17 +484,32 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
 
   Widget _buildStatItem(String title, String value, IconData icon, Color color) {
     return Container(
-      height: 120, // Sabit yükseklik
-      padding: const EdgeInsets.all(16),
+      height: 130,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        gradient: LinearGradient(
+          colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: color.withOpacity(0.2),
+          width: 1,
+        ),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: Colors.white, size: 24),
+          ),
+          const SizedBox(height: 12),
           FittedBox(
             child: Text(
               value,
@@ -367,7 +523,9 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
           Flexible(
             child: Text(
               title,
-              style: Theme.of(context).textTheme.bodySmall,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -427,15 +585,31 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
     // Bildirim göster
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          _isWorkTime 
-              ? 'Mola bitti! Çalışma zamanı 💪'
-              : 'Pomodoro tamamlandı! Mola zamanı ☕',
+        content: Row(
+          children: [
+            Icon(
+              _isWorkTime ? Icons.work : Icons.coffee,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                _isWorkTime 
+                    ? 'Mola bitti! Çalışma zamanı 💪'
+                    : 'Pomodoro tamamlandı! Mola zamanı ☕',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
         ),
         backgroundColor: _isWorkTime 
             ? AppTheme.primaryPurple 
             : AppTheme.accentBlue,
-        duration: const Duration(seconds: 3),
+        duration: const Duration(seconds: 4),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
     );
 
@@ -469,10 +643,10 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
 
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Pomodoro Ayarları'),
-          content: Column(
+      builder: (context) => AlertDialog(
+        title: const Text('Pomodoro Ayarları'),
+        content: SingleChildScrollView(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
@@ -480,7 +654,8 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   labelText: 'Çalışma Süresi (dakika)',
-                  prefixIcon: Icon(Icons.work),
+                  prefixIcon: Icon(Icons.work, color: AppTheme.primaryPurple),
+                  border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 16),
@@ -489,48 +664,67 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
                   labelText: 'Mola Süresi (dakika)',
-                  prefixIcon: Icon(Icons.coffee),
+                  prefixIcon: Icon(Icons.coffee, color: AppTheme.accentBlue),
+                  border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 16),
-              CheckboxListTile(
-                title: const Text('Çalışma süresini istatistiklere dahil et'),
-                value: includeInStudyTime,
-                onChanged: (value) {
-                  setDialogState(() {
-                    includeInStudyTime = value ?? true;
-                  });
-                },
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: CheckboxListTile(
+                  title: const Text('Çalışma süresini istatistiklere dahil et'),
+                  subtitle: const Text('Pomodoro çalışma süreleri günlük verilerinize eklenir'),
+                  value: includeInStudyTime,
+                  onChanged: (value) {
+                    setState(() {
+                      includeInStudyTime = value ?? true;
+                    });
+                  },
+                  activeColor: AppTheme.primaryPurple,
+                ),
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('İptal'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final workDuration = int.tryParse(workController.text) ?? 25;
-                final breakDuration = int.tryParse(breakController.text) ?? 5;
-                
-                final newSettings = PomodoroSettings(
-                  workDuration: workDuration,
-                  breakDuration: breakDuration,
-                  includeInStudyTime: includeInStudyTime,
-                );
-                
-                StorageService.savePomodoroSettings(newSettings);
-                setState(() {
-                  _settings = newSettings;
-                });
-                
-                Navigator.pop(context);
-              },
-              child: const Text('Kaydet'),
-            ),
-          ],
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('İptal'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final workDuration = int.tryParse(workController.text) ?? 25;
+              final breakDuration = int.tryParse(breakController.text) ?? 5;
+              
+              final newSettings = PomodoroSettings(
+                workDuration: workDuration,
+                breakDuration: breakDuration,
+                includeInStudyTime: includeInStudyTime,
+              );
+              
+              StorageService.savePomodoroSettings(newSettings);
+              setState(() {
+                _settings = newSettings;
+              });
+              
+              Navigator.pop(context);
+              
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Ayarlar kaydedildi!'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryPurple,
+            ),
+            child: const Text('Kaydet', style: TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
     );
   }

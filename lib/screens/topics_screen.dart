@@ -12,7 +12,10 @@ class TopicsScreen extends StatefulWidget {
   State<TopicsScreen> createState() => _TopicsScreenState();
 }
 
-class _TopicsScreenState extends State<TopicsScreen> {
+class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  
   String _selectedExamType = 'TYT';
   String? _selectedSubject;
   List<Topic> _topics = [];
@@ -20,7 +23,31 @@ class _TopicsScreenState extends State<TopicsScreen> {
   @override
   void initState() {
     super.initState();
+    _setupAnimations();
     _loadTopics();
+  }
+
+  void _setupAnimations() {
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+    
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   void _loadTopics() {
@@ -86,15 +113,18 @@ class _TopicsScreenState extends State<TopicsScreen> {
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
-      body: Column(
-        children: [
-          _buildExamTypeSelector(),
-          Expanded(
-            child: _selectedSubject == null 
-                ? _buildSubjectsList() 
-                : _buildTopicsList(),
-          ),
-        ],
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: Column(
+          children: [
+            _buildExamTypeSelector(),
+            Expanded(
+              child: _selectedSubject == null 
+                  ? _buildSubjectsList() 
+                  : _buildTopicsList(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -103,28 +133,67 @@ class _TopicsScreenState extends State<TopicsScreen> {
     return Container(
       margin: const EdgeInsets.all(16),
       child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
+        elevation: 4,
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: [
+                AppTheme.primaryPurple.withOpacity(0.05),
+                AppTheme.primaryBlue.withOpacity(0.05),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: _buildToggleButton('TYT', _selectedExamType == 'TYT', () {
-                  setState(() {
-                    _selectedExamType = 'TYT';
-                    _selectedSubject = null;
-                    _topics.clear();
-                  });
-                }),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.primaryGradient,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.quiz,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Sınav Türü',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildToggleButton('AYT', _selectedExamType == 'AYT', () {
-                  setState(() {
-                    _selectedExamType = 'AYT';
-                    _selectedSubject = null;
-                    _topics.clear();
-                  });
-                }),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildToggleButton('TYT', _selectedExamType == 'TYT', () {
+                      setState(() {
+                        _selectedExamType = 'TYT';
+                        _selectedSubject = null;
+                        _topics.clear();
+                      });
+                    }),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildToggleButton('AYT', _selectedExamType == 'AYT', () {
+                      setState(() {
+                        _selectedExamType = 'AYT';
+                        _selectedSubject = null;
+                        _topics.clear();
+                      });
+                    }),
+                  ),
+                ],
               ),
             ],
           ),
@@ -139,12 +208,16 @@ class _TopicsScreenState extends State<TopicsScreen> {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
             gradient: isSelected ? AppTheme.primaryGradient : null,
             color: isSelected ? null : Colors.grey[200],
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? Colors.transparent : Colors.grey[300]!,
+            ),
           ),
           child: Text(
             text,
@@ -152,6 +225,7 @@ class _TopicsScreenState extends State<TopicsScreen> {
             style: TextStyle(
               color: isSelected ? Colors.white : Colors.grey[600],
               fontWeight: FontWeight.w600,
+              fontSize: 16,
             ),
           ),
         ),
@@ -169,47 +243,77 @@ class _TopicsScreenState extends State<TopicsScreen> {
         
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            contentPadding: const EdgeInsets.all(16),
-            leading: CircleAvatar(
-              backgroundColor: AppTheme.primaryPurple.withOpacity(0.1),
-              child: Icon(
-                _getSubjectIcon(subject),
-                color: AppTheme.primaryPurple,
-              ),
-            ),
-            title: Text(
-              subject,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 8),
-                LinearPercentIndicator(
-                  lineHeight: 6,
-                  percent: completion / 100,
-                  backgroundColor: Colors.grey[300],
-                  linearGradient: AppTheme.primaryGradient,
-                  barRadius: const Radius.circular(3),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${completion.toInt()}% tamamlandı',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
-            trailing: const Icon(Icons.arrow_forward_ios),
+          elevation: 2,
+          child: InkWell(
             onTap: () {
               setState(() {
                 _selectedSubject = subject;
               });
               _loadTopics();
             },
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.primaryGradient,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      _getSubjectIcon(subject),
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          subject,
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        LinearPercentIndicator(
+                          lineHeight: 6,
+                          percent: completion / 100,
+                          backgroundColor: Colors.grey[300],
+                          linearGradient: AppTheme.primaryGradient,
+                          barRadius: const Radius.circular(3),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${completion.toInt()}% tamamlandı',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryPurple.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.arrow_forward_ios,
+                      color: AppTheme.primaryPurple,
+                      size: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         );
       },
@@ -222,47 +326,70 @@ class _TopicsScreenState extends State<TopicsScreen> {
         // Header
         Container(
           padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              IconButton(
-                onPressed: () {
-                  setState(() {
-                    _selectedSubject = null;
-                    _topics.clear();
-                  });
-                },
-                icon: const Icon(Icons.arrow_back),
+          child: Card(
+            elevation: 4,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedSubject = null;
+                            _topics.clear();
+                          });
+                        },
+                        icon: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryPurple.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.arrow_back,
+                            color: AppTheme.primaryPurple,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          _selectedSubject!,
+                          style: Theme.of(context).textTheme.headlineSmall,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          gradient: AppTheme.primaryGradient,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '${_topics.where((t) => t.isCompleted).length}/${_topics.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // İlerleme çubuğu
+                  LinearPercentIndicator(
+                    lineHeight: 8,
+                    percent: _topics.isEmpty ? 0 : _topics.where((t) => t.isCompleted).length / _topics.length,
+                    backgroundColor: Colors.grey[300],
+                    linearGradient: AppTheme.primaryGradient,
+                    barRadius: const Radius.circular(4),
+                  ),
+                ],
               ),
-              Expanded(
-                child: Text(
-                  _selectedSubject!,
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-              ),
-              Text(
-                '${_topics.where((t) => t.isCompleted).length}/${_topics.length}',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppTheme.primaryPurple,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
-        
-        // İlerleme çubuğu
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          child: LinearPercentIndicator(
-            lineHeight: 8,
-            percent: _topics.isEmpty ? 0 : _topics.where((t) => t.isCompleted).length / _topics.length,
-            backgroundColor: Colors.grey[300],
-            linearGradient: AppTheme.primaryGradient,
-            barRadius: const Radius.circular(4),
-          ),
-        ),
-        
-        const SizedBox(height: 16),
         
         // Konular listesi
         Expanded(
@@ -274,45 +401,87 @@ class _TopicsScreenState extends State<TopicsScreen> {
               
               return Card(
                 margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  leading: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: topic.isCompleted 
-                          ? AppTheme.primaryPurple 
-                          : Colors.grey[300],
-                    ),
-                    child: Icon(
-                      topic.isCompleted 
-                          ? Icons.check 
-                          : Icons.radio_button_unchecked,
-                      color: topic.isCompleted 
-                          ? Colors.white 
-                          : Colors.grey[600],
-                    ),
-                  ),
-                  title: Text(
-                    topic.name,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      decoration: topic.isCompleted 
-                          ? TextDecoration.lineThrough 
-                          : null,
-                      color: topic.isCompleted 
-                          ? Colors.grey[600] 
-                          : null,
-                    ),
-                  ),
-                  subtitle: topic.questionsSolved > 0 
-                      ? Text('${topic.questionsSolved} soru çözüldü')
-                      : null,
+                elevation: 1,
+                child: InkWell(
                   onTap: () => _toggleTopic(index),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: topic.isCompleted 
+                                ? AppTheme.primaryGradient
+                                : null,
+                            color: topic.isCompleted 
+                                ? null
+                                : Colors.grey[300],
+                          ),
+                          child: Icon(
+                            topic.isCompleted 
+                                ? Icons.check 
+                                : Icons.radio_button_unchecked,
+                            color: topic.isCompleted 
+                                ? Colors.white 
+                                : Colors.grey[600],
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                topic.name,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  decoration: topic.isCompleted 
+                                      ? TextDecoration.lineThrough 
+                                      : null,
+                                  color: topic.isCompleted 
+                                      ? Colors.grey[600] 
+                                      : null,
+                                ),
+                              ),
+                              if (topic.questionsSolved > 0) 
+                                Text(
+                                  '${topic.questionsSolved} soru çözüldü',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        if (topic.isCompleted)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Text(
+                              'Tamamlandı',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.green,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
               );
             },
@@ -369,11 +538,27 @@ class _TopicsScreenState extends State<TopicsScreen> {
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Row(
+          children: [
+            Icon(
+              _topics[index].isCompleted ? Icons.check_circle : Icons.undo,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              message,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
         backgroundColor: _topics[index].isCompleted 
             ? Colors.green 
             : Colors.orange,
-        duration: const Duration(seconds: 1),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
     );
   }
