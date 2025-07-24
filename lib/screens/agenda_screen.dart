@@ -1,3 +1,5 @@
+// lib/screens/agenda_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../utils/constants.dart';
@@ -33,10 +35,8 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
   void _loadActivities() {
     setState(() {
       if (_tabController.index == 0) {
-        // Günlük görünüm
         _activities = StorageService.getAgendaActivitiesForDate(_selectedDate);
       } else {
-        // Haftalık görünüm
         _activities = StorageService.getAgendaActivitiesForWeek(_selectedDate);
       }
       _activities.sort((a, b) => a.dateTime.compareTo(b.dateTime));
@@ -52,8 +52,8 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
         backgroundColor: Colors.transparent,
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppTheme.primaryPurple,
-          labelColor: AppTheme.primaryPurple,
+          indicatorColor: Theme.of(context).primaryColor,
+          labelColor: Theme.of(context).primaryColor,
           unselectedLabelColor: Colors.grey,
           onTap: (index) => _loadActivities(),
           tabs: const [
@@ -71,8 +71,8 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddActivityDialog,
-        backgroundColor: AppTheme.primaryPurple,
-        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: Theme.of(context).primaryColor,
+        child: Icon(Icons.add, color: Colors.white),
       ),
     );
   }
@@ -115,7 +115,7 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
                   });
                   _loadActivities();
                 },
-                icon: const Icon(Icons.chevron_left),
+                icon: Icon(Icons.chevron_left),
               ),
               GestureDetector(
                 onTap: _selectDate,
@@ -123,13 +123,14 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
                   children: [
                     Text(
                       DateFormat('dd MMMM yyyy', 'tr_TR').format(_selectedDate),
-                      style: Theme.of(context).textTheme.headlineSmall,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 16),
                     ),
                     Text(
                       DateFormat('EEEE', 'tr_TR').format(_selectedDate),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.primaryPurple,
-                      ),
+                            color: Theme.of(context).primaryColor,
+                            fontSize: 14,
+                          ),
                     ),
                   ],
                 ),
@@ -141,7 +142,7 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
                   });
                   _loadActivities();
                 },
-                icon: const Icon(Icons.chevron_right),
+                icon: Icon(Icons.chevron_right),
               ),
             ],
           ),
@@ -171,19 +172,24 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
                 },
                 icon: const Icon(Icons.chevron_left),
               ),
-              Column(
-                children: [
-                  Text(
-                    '${DateFormat('dd MMM', 'tr_TR').format(startOfWeek)} - ${DateFormat('dd MMM yyyy', 'tr_TR').format(endOfWeek)}',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  Text(
-                    'Haftalık Görünüm',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.primaryPurple,
+              // YENİ DEĞİŞİKLİK: Expanded widget'ı eklendi
+              Expanded(
+                child: Column(
+                  children: [
+                    Text(
+                      '${DateFormat('dd MMM', 'tr_TR').format(startOfWeek)} - ${DateFormat('dd MMM yyyy', 'tr_TR').format(endOfWeek)}',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 16),
+                      textAlign: TextAlign.center, // Yazıyı kendi içinde de ortala
                     ),
-                  ),
-                ],
+                    Text(
+                      'Haftalık Görünüm',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context).primaryColor,
+                            fontSize: 14,
+                          ),
+                    ),
+                  ],
+                ),
               ),
               IconButton(
                 onPressed: () {
@@ -203,30 +209,32 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
 
   Widget _buildActivitiesList() {
     if (_activities.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.event_note,
-              size: 80,
-              color: Colors.grey[400],
+      return SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.event_note, size: 80, color: Colors.grey[400]),
+                const SizedBox(height: 24),
+                Text(
+                  'Henüz aktivite eklenmemiş',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    'İlk aktivitenizi eklemek için sağ alttaki + butonuna basın.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[500], height: 1.5),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Henüz aktivite eklenmemiş',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'İlk aktivitenizi eklemek için + butonuna basın',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[500],
-              ),
-            ),
-          ],
+          ),
         ),
       );
     }
@@ -278,39 +286,27 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
                     Text(
                       activity.displayTitle,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        decoration: activity.isCompleted 
-                            ? TextDecoration.lineThrough 
-                            : null,
-                      ),
+                            fontWeight: FontWeight.w600,
+                            decoration: activity.isCompleted 
+                                ? TextDecoration.lineThrough 
+                                : null,
+                          ),
                     ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(
-                          Icons.access_time,
-                          size: 16,
-                          color: Colors.grey[600],
-                        ),
+                        Icon(Icons.access_time, size: 16, color: Colors.grey[600]),
                         const SizedBox(width: 4),
                         Text(
                           DateFormat('HH:mm').format(activity.dateTime),
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                         ),
                         const SizedBox(width: 16),
-                        Icon(
-                          Icons.timer,
-                          size: 16,
-                          color: Colors.grey[600],
-                        ),
+                        Icon(Icons.timer, size: 16, color: Colors.grey[600]),
                         const SizedBox(width: 4),
                         Text(
                           '${activity.duration} dk',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                         ),
                       ],
                     ),
@@ -318,9 +314,7 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
                       const SizedBox(height: 4),
                       Text(
                         DateFormat('dd MMMM EEEE', 'tr_TR').format(activity.dateTime),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppTheme.primaryPurple,
-                        ),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).primaryColor),
                       ),
                     ],
                   ],
@@ -333,10 +327,7 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
                     value: 'complete',
                     child: Row(
                       children: [
-                        Icon(
-                          activity.isCompleted ? Icons.undo : Icons.check,
-                          size: 16,
-                        ),
+                        Icon(activity.isCompleted ? Icons.undo : Icons.check, size: 16),
                         const SizedBox(width: 8),
                         Text(activity.isCompleted ? 'Geri Al' : 'Tamamla'),
                       ],
@@ -385,11 +376,11 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
   Color _getActivityColor(AgendaActivityType type) {
     switch (type) {
       case AgendaActivityType.studyTopic:
-        return AppTheme.primaryPurple;
+        return Theme.of(context).primaryColor;
       case AgendaActivityType.solveQuestions:
-        return AppTheme.primaryBlue;
+        return Theme.of(context).colorScheme.secondary;
       case AgendaActivityType.other:
-        return AppTheme.accentBlue;
+        return Colors.teal; // Temadan bağımsız bir renk olabilir
     }
   }
 
@@ -440,7 +431,6 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
         final updatedActivity = activity.copyWith(isCompleted: !activity.isCompleted);
         await StorageService.saveAgendaActivity(updatedActivity);
         
-        // Eğer kitap konusunu otomatik tamamlama seçili ise
         if (updatedActivity.isCompleted && 
             updatedActivity.autoCompleteBookTopic && 
             updatedActivity.bookId != null && 
@@ -461,13 +451,9 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
 
   Future<void> _autoCompleteBookTopic(AgendaActivity activity) async {
     List<Book> books = StorageService.getBooks();
-    Book? book = books.firstWhere(
-      (b) => b.id == activity.bookId,
-      orElse: () => books.first,
-    );
-    
-    if (book != null) {
-      // Kitaptaki konuyu tamamla
+    try {
+      Book book = books.firstWhere((b) => b.id == activity.bookId);
+      
       for (int i = 0; i < book.topics.length; i++) {
         if (book.topics[i].name == activity.topic) {
           book.topics[i].isCompleted = true;
@@ -475,6 +461,9 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
         }
       }
       await StorageService.saveBook(book);
+    } catch (e) {
+      // Kitap bulunamazsa hata vermemesi için
+      print("Otomatik tamamlama için kitap bulunamadı: ${activity.bookId}");
     }
   }
 
@@ -514,6 +503,8 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
     );
   }
 }
+
+// Dialog sınıfları aşağıda (AddActivityDialog, ActivityDetailsSheet)
 
 class AddActivityDialog extends StatefulWidget {
   final DateTime selectedDate;
@@ -616,28 +607,15 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
         const SizedBox(height: 8),
         DropdownButtonFormField<AgendaActivityType>(
           value: _selectedType,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            isDense: true,
-          ),
+          decoration: InputDecoration(border: OutlineInputBorder(), isDense: true),
           items: const [
-            DropdownMenuItem(
-              value: AgendaActivityType.studyTopic,
-              child: Text('Konu Çalışacağım'),
-            ),
-            DropdownMenuItem(
-              value: AgendaActivityType.solveQuestions,
-              child: Text('Soru Çözeceğim'),
-            ),
-            DropdownMenuItem(
-              value: AgendaActivityType.other,
-              child: Text('Diğer'),
-            ),
+            DropdownMenuItem(value: AgendaActivityType.studyTopic, child: Text('Konu Çalışacağım')),
+            DropdownMenuItem(value: AgendaActivityType.solveQuestions, child: Text('Soru Çözeceğim')),
+            DropdownMenuItem(value: AgendaActivityType.other, child: Text('Diğer')),
           ],
           onChanged: (value) {
             setState(() {
               _selectedType = value!;
-              // Reset fields when type changes
               _examType = null;
               _subject = null;
               _topic = null;
@@ -662,13 +640,8 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
               InkWell(
                 onTap: _selectDate,
                 child: InputDecorator(
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    isDense: true,
-                  ),
-                  child: Text(
-                    DateFormat('dd/MM/yyyy').format(_selectedDate),
-                  ),
+                  decoration: InputDecoration(border: OutlineInputBorder(), isDense: true),
+                  child: Text(DateFormat('dd/MM/yyyy').format(_selectedDate)),
                 ),
               ),
             ],
@@ -684,13 +657,8 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
               InkWell(
                 onTap: _selectTime,
                 child: InputDecorator(
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    isDense: true,
-                  ),
-                  child: Text(
-                    _selectedTime.format(context),
-                  ),
+                  decoration: InputDecoration(border: OutlineInputBorder(), isDense: true),
+                  child: Text(_selectedTime.format(context)),
                 ),
               ),
             ],
@@ -709,10 +677,7 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
         TextFormField(
           initialValue: _duration.toString(),
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            isDense: true,
-          ),
+          decoration: InputDecoration(border: OutlineInputBorder(), isDense: true),
           onChanged: (value) {
             _duration = int.tryParse(value) ?? 60;
           },
@@ -737,14 +702,8 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
       children: [
         DropdownButtonFormField<String>(
           value: _examType,
-          decoration: const InputDecoration(
-            labelText: 'Sınav Türü',
-            border: OutlineInputBorder(),
-            isDense: true,
-          ),
-          items: ['TYT', 'AYT'].map((type) {
-            return DropdownMenuItem(value: type, child: Text(type));
-          }).toList(),
+          decoration: InputDecoration(labelText: 'Sınav Türü', border: OutlineInputBorder(), isDense: true),
+          items: ['TYT', 'AYT'].map((type) => DropdownMenuItem(value: type, child: Text(type))).toList(),
           onChanged: (value) {
             setState(() {
               _examType = value;
@@ -757,14 +716,8 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
         if (_examType != null) ...[
           DropdownButtonFormField<String>(
             value: _subject,
-            decoration: const InputDecoration(
-              labelText: 'Ders',
-              border: OutlineInputBorder(),
-              isDense: true,
-            ),
-            items: _getSubjects().map((subject) {
-              return DropdownMenuItem(value: subject, child: Text(subject));
-            }).toList(),
+            decoration: InputDecoration(labelText: 'Ders', border: OutlineInputBorder(), isDense: true),
+            items: _getSubjects().map((subject) => DropdownMenuItem(value: subject, child: Text(subject))).toList(),
             onChanged: (value) {
               setState(() {
                 _subject = value;
@@ -777,20 +730,8 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
         if (_subject != null) ...[
           DropdownButtonFormField<String>(
             value: _topic,
-            decoration: const InputDecoration(
-              labelText: 'Konu',
-              border: OutlineInputBorder(),
-              isDense: true,
-            ),
-            items: _getTopics().map((topic) {
-              return DropdownMenuItem(
-                value: topic,
-                child: Text(
-                  topic,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              );
-            }).toList(),
+            decoration: InputDecoration(labelText: 'Konu', border: OutlineInputBorder(), isDense: true),
+            items: _getTopics().map((topic) => DropdownMenuItem(value: topic, child: Text(topic, overflow: TextOverflow.ellipsis))).toList(),
             onChanged: (value) {
               setState(() {
                 _topic = value;
@@ -809,22 +750,10 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
       children: [
         DropdownButtonFormField<String>(
           value: _bookId,
-          decoration: const InputDecoration(
-            labelText: 'Kitap (İsteğe bağlı)',
-            border: OutlineInputBorder(),
-            isDense: true,
-          ),
+          decoration: InputDecoration(labelText: 'Kitap (İsteğe bağlı)', border: OutlineInputBorder(), isDense: true),
           items: [
-            const DropdownMenuItem(
-              value: null,
-              child: Text('Kitap seçmeyin'),
-            ),
-            ...books.map((book) {
-              return DropdownMenuItem(
-                value: book.id,
-                child: Text(book.name),
-              );
-            }).toList(),
+            const DropdownMenuItem(value: null, child: Text('Kitap seçmeyin')),
+            ...books.map((book) => DropdownMenuItem(value: book.id, child: Text(book.name))),
           ],
           onChanged: (value) {
             setState(() {
@@ -844,11 +773,7 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
         const SizedBox(height: 16),
         if (_bookId == null) ...[
           TextFormField(
-            decoration: const InputDecoration(
-              labelText: 'Ders',
-              border: OutlineInputBorder(),
-              isDense: true,
-            ),
+            decoration: InputDecoration(labelText: 'Ders', border: OutlineInputBorder(), isDense: true),
             onChanged: (value) {
               _subject = value;
             },
@@ -856,11 +781,7 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
           const SizedBox(height: 16),
         ],
         TextFormField(
-          decoration: const InputDecoration(
-            labelText: 'Konu (İsteğe bağlı)',
-            border: OutlineInputBorder(),
-            isDense: true,
-          ),
+          decoration: InputDecoration(labelText: 'Konu (İsteğe bağlı)', border: OutlineInputBorder(), isDense: true),
           onChanged: (value) {
             _topic = value.isEmpty ? null : value;
           },
@@ -884,11 +805,7 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
   Widget _buildOtherFields() {
     return TextFormField(
       controller: _customTitleController,
-      decoration: const InputDecoration(
-        labelText: 'Aktivite Başlığı',
-        border: OutlineInputBorder(),
-        isDense: true,
-      ),
+      decoration: InputDecoration(labelText: 'Aktivite Başlığı', border: OutlineInputBorder(), isDense: true),
       onChanged: (value) {
         _customTitle = value;
       },
@@ -896,13 +813,13 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
   }
 
   List<String> _getSubjects() {
-  if (_examType == 'TYT') {
-    return AppConstants.tytTopics.keys.toList();
-  } else if (_examType == 'AYT') {
-    return AppConstants.aytTopics.keys.toList();
+    if (_examType == 'TYT') {
+      return AppConstants.tytTopics.keys.toList();
+    } else if (_examType == 'AYT') {
+      return AppConstants.aytTopics.keys.toList();
+    }
+    return [];
   }
-  return [];
-}
 
   List<String> _getTopics() {
     if (_examType == 'TYT') {
@@ -916,7 +833,7 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
     final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
-      firstDate: DateTime.now(),
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       locale: const Locale('tr', 'TR'),
     );
@@ -942,15 +859,12 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
   }
 
   void _saveActivity() async {
-    if (!_validateFields()) return;
+    if (!_validateFields()) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lütfen gerekli alanları doldurun.'), backgroundColor: Colors.red));
+      return;
+    }
 
-    final dateTime = DateTime(
-      _selectedDate.year,
-      _selectedDate.month,
-      _selectedDate.day,
-      _selectedTime.hour,
-      _selectedTime.minute,
-    );
+    final dateTime = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day, _selectedTime.hour, _selectedTime.minute);
 
     final activity = AgendaActivity(
       id: widget.existingActivity?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
@@ -993,7 +907,7 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
       case AgendaActivityType.studyTopic:
         return _examType != null && _subject != null && _topic != null;
       case AgendaActivityType.solveQuestions:
-        return _subject != null;
+        return _subject != null || _bookId != null;
       case AgendaActivityType.other:
         return _customTitle.isNotEmpty;
     }
@@ -1022,17 +936,11 @@ class ActivityDetailsSheet extends StatelessWidget {
             child: Container(
               width: 50,
               height: 5,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(10),
-              ),
+              decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(10)),
             ),
           ),
           const SizedBox(height: 16),
-          Text(
-            'Aktivite Detayları',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
+          Text('Aktivite Detayları', style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 16),
           _buildDetailRow('Başlık', activity.displayTitle),
           _buildDetailRow('Tarih', DateFormat('dd MMMM yyyy EEEE', 'tr_TR').format(activity.dateTime)),
@@ -1082,14 +990,9 @@ class ActivityDetailsSheet extends StatelessWidget {
         children: [
           SizedBox(
             width: 80,
-            child: Text(
-              '$label:',
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
+            child: Text('$label:', style: TextStyle(fontWeight: FontWeight.w600)),
           ),
-          Expanded(
-            child: Text(value),
-          ),
+          Expanded(child: Text(value)),
         ],
       ),
     );

@@ -1,3 +1,5 @@
+// lib/screens/study_time_entry_screen.dart
+
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
 import '../utils/theme.dart';
@@ -93,12 +95,12 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with Ticker
           icon: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppTheme.primaryPurple.withOpacity(0.1),
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.arrow_back,
-              color: AppTheme.primaryPurple,
+              color: Theme.of(context).primaryColor,
             ),
           ),
         ),
@@ -145,8 +147,8 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with Ticker
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: [
-              AppTheme.primaryPurple.withOpacity(0.05),
-              AppTheme.primaryBlue.withOpacity(0.05),
+              Theme.of(context).primaryColor.withOpacity(0.05),
+              Theme.of(context).colorScheme.secondary.withOpacity(0.05),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -160,20 +162,13 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with Ticker
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    gradient: AppTheme.primaryGradient,
+                    gradient: AppThemes.getGradient(StorageService.getTheme()),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
-                    Icons.quiz,
-                    color: Colors.white,
-                    size: 20,
-                  ),
+                  child: const Icon(Icons.quiz, color: Colors.white, size: 20),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'Sınav Türü',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
+                Text('Sınav Türü', style: Theme.of(context).textTheme.headlineSmall),
               ],
             ),
             const SizedBox(height: 16),
@@ -216,8 +211,8 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with Ticker
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            gradient: isSelected ? AppTheme.primaryGradient : null,
-            color: isSelected ? null : Colors.grey[200],
+            gradient: isSelected ? AppThemes.getGradient(StorageService.getTheme()) : null,
+            color: isSelected ? null : Theme.of(context).colorScheme.surfaceVariant,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected ? Colors.transparent : Colors.grey[300]!,
@@ -227,7 +222,7 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with Ticker
             text,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: isSelected ? Colors.white : Colors.grey[600],
+              color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
               fontSize: 16,
             ),
@@ -250,20 +245,13 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with Ticker
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryBlue.withOpacity(0.1),
+                    color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
-                    Icons.school,
-                    color: AppTheme.primaryBlue,
-                    size: 20,
-                  ),
+                  child: Icon(Icons.school, color: Theme.of(context).colorScheme.secondary, size: 20),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'Ders Seçin',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
+                Text('Ders Seçin', style: Theme.of(context).textTheme.headlineSmall),
               ],
             ),
             const SizedBox(height: 16),
@@ -274,18 +262,18 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with Ticker
               ),
               child: DropdownButtonFormField<String>(
                 value: _selectedSubject,
-                decoration: const InputDecoration(
-                  hintText: 'Ders seçin...',
-                  prefixIcon: Icon(Icons.school, color: AppTheme.primaryBlue),
+                decoration: InputDecoration(
+                  hintText: 'İsteğe bağlı - Ders seçin...',
+                  prefixIcon: Icon(Icons.school, color: Theme.of(context).colorScheme.secondary),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.all(16),
+                  contentPadding: const EdgeInsets.all(16),
                 ),
-                items: _subjects.map((subject) {
-                  return DropdownMenuItem(
-                    value: subject,
-                    child: Text(subject),
-                  );
-                }).toList(),
+                items: [
+                  const DropdownMenuItem<String>(value: null, child: Text('Ders seçilmeyecek')),
+                  ...(_subjects.map((subject) {
+                    return DropdownMenuItem(value: subject, child: Text(subject));
+                  }).toList()),
+                ],
                 onChanged: (value) {
                   setState(() {
                     _selectedSubject = value;
@@ -313,20 +301,13 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with Ticker
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppTheme.accentBlue.withOpacity(0.1),
+                    color: Colors.teal.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
-                    Icons.topic,
-                    color: AppTheme.accentBlue,
-                    size: 20,
-                  ),
+                  child: Icon(Icons.topic, color: Colors.teal, size: 20),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'Konu Seçin',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
+                Text('Konu Seçin', style: Theme.of(context).textTheme.headlineSmall),
               ],
             ),
             const SizedBox(height: 16),
@@ -337,22 +318,22 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with Ticker
               ),
               child: DropdownButtonFormField<String>(
                 value: _selectedTopic,
-                decoration: const InputDecoration(
-                  hintText: 'Konu seçin...',
-                  prefixIcon: Icon(Icons.topic, color: AppTheme.accentBlue),
+                decoration: InputDecoration(
+                  hintText: 'İsteğe bağlı - Konu seçin...',
+                  prefixIcon: Icon(Icons.topic, color: Colors.teal),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.all(16),
+                  contentPadding: const EdgeInsets.all(16),
                 ),
-                items: _topics.map((topic) {
-                  return DropdownMenuItem(
-                    value: topic,
-                    child: Text(
-                      topic,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  );
-                }).toList(),
-                onChanged: _selectedSubject == null ? null : (value) {
+                items: [
+                  const DropdownMenuItem<String>(value: null, child: Text('Konu seçilmeyecek')),
+                  ...(_topics.map((topic) {
+                    return DropdownMenuItem(
+                      value: topic,
+                      child: Text(topic, overflow: TextOverflow.ellipsis),
+                    );
+                  }).toList()),
+                ],
+                onChanged: (value) {
                   setState(() {
                     _selectedTopic = value;
                   });
@@ -378,20 +359,13 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with Ticker
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppTheme.secondaryPurple.withOpacity(0.1),
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
-                    Icons.access_time,
-                    color: AppTheme.secondaryPurple,
-                    size: 20,
-                  ),
+                  child: Icon(Icons.access_time, color: Theme.of(context).primaryColor, size: 20),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'Çalışma Süresi',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
+                Text('Çalışma Süresi', style: Theme.of(context).textTheme.headlineSmall),
               ],
             ),
             const SizedBox(height: 20),
@@ -399,28 +373,29 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with Ticker
               children: [
                 Expanded(
                   child: Container(
+                    height: 70,
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryBlue.withOpacity(0.1),
+                      color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.primaryBlue.withOpacity(0.3)),
+                      border: Border.all(color: Theme.of(context).colorScheme.secondary.withOpacity(0.3)),
                     ),
                     child: TextField(
                       controller: _hoursController,
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: AppTheme.primaryBlue,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.secondary,
                         fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                        fontSize: 16,
                       ),
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Saat',
-                        labelStyle: TextStyle(color: AppTheme.primaryBlue),
-                        prefixIcon: Icon(Icons.access_time, color: AppTheme.primaryBlue),
+                        labelStyle: TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 12),
+                        prefixIcon: Icon(Icons.access_time, color: Theme.of(context).colorScheme.secondary, size: 18),
                         border: InputBorder.none,
                         suffixText: 'sa',
-                        suffixStyle: TextStyle(color: AppTheme.primaryBlue),
-                        contentPadding: EdgeInsets.all(16),
+                        suffixStyle: TextStyle(color: Theme.of(context).colorScheme.secondary, fontSize: 12),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
                   ),
@@ -428,78 +403,34 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with Ticker
                 const SizedBox(width: 12),
                 Expanded(
                   child: Container(
+                    height: 70,
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryPurple.withOpacity(0.1),
+                      color: Theme.of(context).primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.primaryPurple.withOpacity(0.3)),
+                      border: Border.all(color: Theme.of(context).primaryColor.withOpacity(0.3)),
                     ),
                     child: TextField(
                       controller: _minutesController,
                       keyboardType: TextInputType.number,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: AppTheme.primaryPurple,
+                      style: TextStyle(
+                        color: Theme.of(context).primaryColor,
                         fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                        fontSize: 16,
                       ),
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Dakika',
-                        labelStyle: TextStyle(color: AppTheme.primaryPurple),
-                        prefixIcon: Icon(Icons.timer, color: AppTheme.primaryPurple),
+                        labelStyle: TextStyle(color: Theme.of(context).primaryColor, fontSize: 12),
+                        prefixIcon: Icon(Icons.timer, color: Theme.of(context).primaryColor, size: 18),
                         border: InputBorder.none,
                         suffixText: 'dk',
-                        suffixStyle: TextStyle(color: AppTheme.primaryPurple),
-                        contentPadding: EdgeInsets.all(16),
+                        suffixStyle: TextStyle(color: Theme.of(context).primaryColor, fontSize: 12),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 20),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppTheme.primaryBlue.withOpacity(0.1),
-                    AppTheme.primaryPurple.withOpacity(0.1),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppTheme.primaryBlue.withOpacity(0.3),
-                ),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.primaryGradient,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.info_outline,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Çalışma süreniz günlük istatistiklerinize eklenir',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.primaryBlue,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
           ],
         ),
@@ -510,12 +441,16 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with Ticker
   Widget _buildResultCard() {
     return Card(
       elevation: 8,
-      shadowColor: AppTheme.secondaryPurple.withOpacity(0.3),
+      shadowColor: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          gradient: AppTheme.secondaryGradient,
+          gradient: LinearGradient(
+            colors: [Theme.of(context).colorScheme.secondary, Theme.of(context).primaryColor],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -526,31 +461,16 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with Ticker
                 color: Colors.white.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(50),
               ),
-              child: const Icon(
-                Icons.schedule,
-                color: Colors.white,
-                size: 32,
-              ),
+              child: const Icon(Icons.schedule, color: Colors.white, size: 32),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Toplam Çalışma Süresi',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            const Text('Toplam Çalışma Süresi', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             Text(
               _totalMinutes > 0 
                 ? '${(_totalMinutes / 60).floor()}sa ${_totalMinutes % 60}dk'
                 : '0sa 0dk',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 42,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(color: Colors.white, fontSize: 42, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Container(
@@ -561,11 +481,7 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with Ticker
               ),
               child: Text(
                 '$_totalMinutes dakika',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
               ),
             ),
           ],
@@ -575,29 +491,19 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with Ticker
   }
 
   Widget _buildSaveButton() {
-    final isValid = _selectedSubject != null && 
-                   _selectedTopic != null && 
-                   _totalMinutes > 0;
+    final isValid = _totalMinutes > 0;
 
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: isValid ? _saveSession : null,
         icon: const Icon(Icons.save),
-        label: const Text(
-          'Kaydet',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        label: const Text('Kaydet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 18),
-          backgroundColor: isValid ? AppTheme.primaryPurple : Colors.grey[300],
+          backgroundColor: isValid ? Theme.of(context).primaryColor : Colors.grey[300],
           foregroundColor: isValid ? Colors.white : Colors.grey[600],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: isValid ? 4 : 0,
         ),
       ),
@@ -608,18 +514,10 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with Ticker
     if (_totalMinutes == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Row(
-            children: [
-              Icon(Icons.warning, color: Colors.white),
-              SizedBox(width: 12),
-              Text('Çalışma süresi girmelisiniz'),
-            ],
-          ),
+          content: const Row(children: [Icon(Icons.warning, color: Colors.white), SizedBox(width: 12), Text('Çalışma süresi girmelisiniz')]),
           backgroundColor: Colors.orange,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       return;
@@ -627,8 +525,8 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with Ticker
 
     final session = StudySession(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      subject: _selectedSubject!,
-      topic: _selectedTopic!,
+      subject: _selectedSubject ?? 'Genel',
+      topic: _selectedTopic ?? 'Genel',
       duration: _totalMinutes,
       correctAnswers: 0,
       wrongAnswers: 0,
@@ -645,19 +543,12 @@ class _StudyTimeEntryScreenState extends State<StudyTimeEntryScreen> with Ticker
             children: [
               const Icon(Icons.check_circle, color: Colors.white),
               const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Çalışma süresi kaydedildi! ${(_totalMinutes / 60).toStringAsFixed(1)} saat',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
+              Expanded(child: Text('Çalışma süresi kaydedildi! ${(_totalMinutes / 60).toStringAsFixed(1)} saat', style: const TextStyle(fontWeight: FontWeight.w600))),
             ],
           ),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       Navigator.pop(context);

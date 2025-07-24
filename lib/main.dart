@@ -1,3 +1,5 @@
+// lib/main.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -10,20 +12,13 @@ import 'utils/theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Locale desteğini başlat
   await initializeDateFormatting('tr_TR', null);
-  
-  // AdMob'u başlat
   await MobileAds.instance.initialize();
-  
-  // Storage servisini başlat
   await StorageService.init();
   
-  // Sistem UI'yi ayarla
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
     ),
   );
   
@@ -38,7 +33,8 @@ class YKSApp extends StatefulWidget {
 }
 
 class _YKSAppState extends State<YKSApp> {
-  bool _isDarkMode = false;
+  // DEĞİŞTİ: bool _isDarkMode -> String _currentTheme
+  String _currentTheme = AppThemes.light;
 
   @override
   void initState() {
@@ -46,28 +42,29 @@ class _YKSAppState extends State<YKSApp> {
     _loadThemePreference();
   }
 
-  _loadThemePreference() async {
-    final isDark = await StorageService.getBool('dark_mode') ?? false;
+  void _loadThemePreference() {
+    // DEĞİŞTİ: Tema adı okunuyor
+    final themeName = StorageService.getTheme();
     setState(() {
-      _isDarkMode = isDark;
+      _currentTheme = themeName;
     });
   }
 
-  void toggleTheme() {
+  // DEĞİŞTİ: toggleTheme -> changeTheme(String themeName)
+  void changeTheme(String themeName) {
     setState(() {
-      _isDarkMode = !_isDarkMode;
+      _currentTheme = themeName;
     });
-    StorageService.setBool('dark_mode', _isDarkMode);
+    StorageService.saveTheme(themeName);
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'YKS Hazırlık',
+      title: 'YKS Asistanım',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      // DEĞİŞTİ: theme, darkTheme, themeMode yerine tek bir theme
+      theme: AppThemes.getThemeData(_currentTheme),
       locale: const Locale('tr', 'TR'),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
@@ -79,8 +76,9 @@ class _YKSAppState extends State<YKSApp> {
         Locale('en', 'US'),
       ],
       home: MainNavigation(
-        isDarkMode: _isDarkMode,
-        onThemeChanged: toggleTheme,
+        // DEĞİŞTİ: Parametreler güncellendi
+        currentTheme: _currentTheme,
+        onThemeChanged: changeTheme,
       ),
     );
   }

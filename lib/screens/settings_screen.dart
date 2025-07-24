@@ -1,3 +1,5 @@
+// lib/screens/settings_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../utils/constants.dart';
@@ -6,12 +8,12 @@ import '../services/storage_service.dart';
 import 'net_calculator_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
-  final bool isDarkMode;
-  final VoidCallback onThemeChanged;
+  final String currentTheme;
+  final ValueChanged<String> onThemeChanged;
 
   const SettingsScreen({
     super.key,
-    required this.isDarkMode,
+    required this.currentTheme,
     required this.onThemeChanged,
   });
 
@@ -74,7 +76,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          gradient: AppTheme.primaryGradient,
+          gradient: AppThemes.getGradient(widget.currentTheme),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -86,10 +88,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 shape: BoxShape.circle,
                 color: Colors.white,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.person,
                 size: 40,
-                color: AppTheme.primaryPurple,
+                color: Theme.of(context).primaryColor,
               ),
             ),
             const SizedBox(height: 12),
@@ -103,11 +105,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             Text(
               daysLeft > 0 
-                  ? '$daysLeft gün kaldı'
-                  : daysLeft == 0
-                      ? 'Bugün sınav günü!'
-                      : 'Sınav geçti',
-              style: const TextStyle(
+                ? '$daysLeft gün kaldı'
+                : daysLeft == 0 
+                  ? 'Bugün sınav günü!'
+                  : 'Sınav geçti',
+              style: TextStyle(
                 color: Colors.white70,
                 fontSize: 14,
               ),
@@ -156,10 +158,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const Divider(height: 1),
               _buildSettingsTile(
-                icon: widget.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                title: 'Tema',
-                subtitle: widget.isDarkMode ? 'Karanlık Mod' : 'Açık Mod',
-                onTap: widget.onThemeChanged,
+                icon: Icons.palette,
+                title: 'Uygulama Teması',
+                subtitle: AppThemes.themeDisplayNames[widget.currentTheme] ?? 'Aydınlık',
+                onTap: _showThemeSelectionDialog,
               ),
               const Divider(height: 1),
               ListTile(
@@ -167,19 +169,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryPurple.withOpacity(0.1),
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.notifications,
-                    color: AppTheme.primaryPurple,
+                    color: Theme.of(context).primaryColor,
                     size: 20,
                   ),
                 ),
-                title: const Text(
-                  'Bildirimler',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
+                title: const Text('Bildirimler', style: TextStyle(fontWeight: FontWeight.w600)),
                 subtitle: const Text('Ajanda hatırlatıcıları'),
                 trailing: Switch(
                   value: _notificationsEnabled,
@@ -189,7 +188,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     });
                     await StorageService.setNotificationEnabled(value);
                   },
-                  activeColor: AppTheme.primaryPurple,
+                  activeColor: Theme.of(context).primaryColor,
                 ),
               ),
             ],
@@ -199,14 +198,80 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  void _showThemeSelectionDialog() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Tema Seç', style: Theme.of(context).textTheme.headlineSmall),
+              const SizedBox(height: 16),
+              ...AppThemes.themeDisplayNames.entries.map((entry) {
+                final themeName = entry.key;
+                final themeDisplayName = entry.value;
+                final isPremiumTheme = AppThemes.premiumThemes.contains(themeName);
+                final canUseTheme = !isPremiumTheme || _isPremium;
+
+                return Opacity(
+                  opacity: canUseTheme ? 1.0 : 0.6,
+                  child: ListTile(
+                    onTap: canUseTheme
+                        ? () {
+                            widget.onThemeChanged(themeName);
+                            Navigator.pop(context);
+                          }
+                        : () {
+                            Navigator.pop(context);
+                            if (!_isPremium) {
+                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Bu tema için Premium üye olmalısınız.')));
+                            }
+                          },
+                    leading: Container(
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        gradient: AppThemes.getGradient(themeName),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Theme.of(context).dividerColor, width: 2)
+                      ),
+                    ),
+                    title: Text(themeDisplayName),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isPremiumTheme)
+                          Icon(Icons.star, color: Colors.amber, size: 16),
+                        if (!canUseTheme) ...[
+                          const SizedBox(width: 8),
+                          Icon(Icons.lock, color: Colors.grey, size: 16),
+                        ],
+                        if (widget.currentTheme == themeName) ...[
+                           const SizedBox(width: 8),
+                           Icon(Icons.check_circle, color: Theme.of(context).primaryColor),
+                        ],
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+               const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildToolsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Araçlar',
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
+        Text('Araçlar', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 12),
         Card(
           child: Column(
@@ -218,9 +283,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const NetCalculatorScreen(),
-                    ),
+                    MaterialPageRoute(builder: (context) => const NetCalculatorScreen()),
                   );
                 },
               ),
@@ -236,10 +299,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Premium',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
+          Text('Premium', style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 12),
           Card(
             child: Container(
@@ -255,19 +315,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               child: Column(
                 children: [
-                  const Icon(
-                    Icons.star,
-                    color: Colors.amber,
-                    size: 32,
-                  ),
+                  Icon(Icons.star, color: Colors.amber, size: 32),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Premium Üyesiniz!',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  const Text('Premium Üyesiniz!', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
                   Text(
                     'Reklamları kaldırdınız ve tüm premium özelliklere erişiminiz var',
@@ -285,10 +335,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Premium',
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
+        Text('Premium', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 12),
         Card(
           child: Container(
@@ -300,40 +347,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    gradient: AppTheme.primaryGradient,
+                    gradient: AppThemes.getGradient(widget.currentTheme),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.star,
-                    color: Colors.white,
-                    size: 30,
-                  ),
+                  child: Icon(Icons.star, color: Colors.white, size: 30),
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Premium\'a Geçin',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                const Text('Premium\'a Geçin', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 Text(
                   '${AppConstants.premiumPrice.toInt()} TL',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: AppTheme.primaryPurple,
+                    color: Theme.of(context).primaryColor,
                   ),
                 ),
                 const SizedBox(height: 16),
                 Column(
                   children: [
                     _buildPremiumFeature('Reklamları kaldır'),
-                    _buildPremiumFeature('Gelişmiş istatistikler'),
+                    _buildPremiumFeature('4 Özel Tema Kilidini Aç'),
                     _buildPremiumFeature('Sınırsız kitap ekleme'),
-                    _buildPremiumFeature('Özel temalar'),
-                    _buildPremiumFeature('Öncelikli destek'),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -343,24 +378,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onPressed: _purchasePremium,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        gradient: AppTheme.primaryGradient,
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: const Text(
-                        'Premium Satın Al',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
+                    child: const Text('Premium Satın Al', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
                   ),
                 ),
               ],
@@ -375,17 +399,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.check_circle,
-            color: Colors.green,
-            size: 16,
-          ),
+          Icon(Icons.check_circle, color: Colors.green, size: 16),
           const SizedBox(width: 8),
-          Text(
-            feature,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          Text(feature, style: Theme.of(context).textTheme.bodyMedium),
         ],
       ),
     );
@@ -395,10 +413,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Hakkında',
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
+        Text('Hakkında', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 12),
         Card(
           child: Column(
@@ -406,7 +421,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildSettingsTile(
                 icon: Icons.info,
                 title: 'Uygulama Hakkında',
-                subtitle: 'Versiyon 1.0.0',
+                subtitle: 'Versiyon 2.0.0',
                 onTap: _showAboutDialog,
               ),
               const Divider(height: 1),
@@ -416,7 +431,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 subtitle: 'Play Store\'da değerlendirin',
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Play Store\'a yönlendiriliyor...')),
+                    SnackBar(content: Text('Play Store\'a yönlendiriliyor...')),
                   );
                 },
               ),
@@ -427,32 +442,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildSettingsTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildSettingsTile({required IconData icon, required String title, required String subtitle, required VoidCallback onTap}) {
     return ListTile(
       leading: Container(
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: AppTheme.primaryPurple.withOpacity(0.1),
+          color: Theme.of(context).primaryColor.withOpacity(0.1),
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Icon(
-          icon,
-          color: AppTheme.primaryPurple,
-          size: 20,
-        ),
+        child: Icon(icon, color: Theme.of(context).primaryColor, size: 20),
       ),
-      title: Text(
-        title,
-        style: const TextStyle(fontWeight: FontWeight.w600),
-      ),
+      title: Text(title, style: TextStyle(fontWeight: FontWeight.w600)),
       subtitle: Text(subtitle),
-      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+      trailing: Icon(Icons.arrow_forward_ios, size: 16),
       onTap: onTap,
     );
   }
@@ -467,18 +470,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
 
     if (selectedDate != null) {
-      setState(() {
-        _yksDate = selectedDate;
-      });
+      setState(() => _yksDate = selectedDate);
       await StorageService.saveYksDate(selectedDate);
-      
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('YKS tarihi güncellendi!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('YKS tarihi güncellendi!'), backgroundColor: Colors.green));
       }
     }
   }
@@ -488,9 +483,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Premium Satın Al'),
-        content: const Text(
-          'Premium özellikler için Google Play Store üzerinden ödeme yapılacaktır. Devam etmek istiyor musunuz?',
-        ),
+        content: const Text('Premium özellikler için Google Play Store üzerinden ödeme yapılacaktır. Devam etmek istiyor musunuz?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -499,22 +492,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              
               // Simüle edilmiş satın alma
               await Future.delayed(const Duration(seconds: 2));
-              
               await StorageService.setPremiumStatus(true);
-              setState(() {
-                _isPremium = true;
-              });
-              
+              setState(() => _isPremium = true);
               if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Premium satın alındı! Teşekkürler! 🎉'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Premium satın alındı! Teşekkürler! 🎉'), backgroundColor: Colors.green));
               }
             },
             child: const Text('Satın Al'),
@@ -527,37 +510,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _showAboutDialog() {
     showAboutDialog(
       context: context,
-      applicationName: 'YKS Hazırlık',
-      applicationVersion: '1.0.0',
+      applicationName: 'YKS Asistanım',
+      applicationVersion: '2.0.0',
       applicationIcon: Container(
         width: 60,
         height: 60,
         decoration: BoxDecoration(
-          gradient: AppTheme.primaryGradient,
+          gradient: AppThemes.getGradient(widget.currentTheme),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Icon(
-          Icons.school,
-          color: Colors.white,
-          size: 30,
-        ),
+        child: Icon(Icons.school, color: Colors.white, size: 30),
       ),
       children: [
-        const Text(
-          'YKS hazırlık sürecinizi organize etmenize yardımcı olan kapsamlı bir uygulama.',
-        ),
-        const SizedBox(height: 16),
-        const Text(
-          'Özellikler:',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        const Text('• Çalışma takibi'),
-        const Text('• Soru ve deneme girişi'),
-        const Text('• İstatistiksel analiz'),
-        const Text('• Konu ve kitap yönetimi'),
-        const Text('• Ajanda sistemi'),
-        const Text('• Pomodoro timer'),
-        const Text('• Net hesaplayıcı'),
+        const Text('YKS Asistanım sürecinizi organize etmenize yardımcı olan kapsamlı bir uygulama.'),
       ],
     );
   }

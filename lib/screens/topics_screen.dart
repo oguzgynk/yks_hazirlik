@@ -1,3 +1,5 @@
+// lib/screens/topics_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import '../utils/constants.dart';
@@ -24,7 +26,7 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
   void initState() {
     super.initState();
     _setupAnimations();
-    _loadTopics();
+    // _loadTopics() artık bir ders seçildiğinde çağrılacak.
   }
 
   void _setupAnimations() {
@@ -61,10 +63,28 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
             (t) => t.name == topicName,
             orElse: () => Topic(name: topicName),
           );
+          
+          final totalQuestionsSolved = _getTopicQuestionCount(topicName);
+          savedTopic.questionsSolved = totalQuestionsSolved;
+          
           return savedTopic;
         }).toList();
       });
     }
+  }
+
+  int _getTopicQuestionCount(String topicName) {
+    final sessions = StorageService.getStudySessions();
+    int totalQuestions = 0;
+    
+    for (var session in sessions) {
+      if (session.topic == topicName && 
+          session.subject == _selectedSubject) {
+        totalQuestions += session.correctAnswers + session.wrongAnswers + session.emptyAnswers;
+      }
+    }
+    
+    return totalQuestions;
   }
 
   List<String> _getSubjectTopics() {
@@ -105,11 +125,32 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
     return (completedCount / allTopics.length) * 100;
   }
 
+  IconData _getSubjectIcon(String subject) {
+    switch (subject.toLowerCase()) {
+      case 'matematik': return Icons.calculate;
+      case 'türkçe':
+      case 'türk dili ve edebiyatı': return Icons.menu_book;
+      case 'geometri': return Icons.square_foot;
+      case 'fizik': return Icons.science;
+      case 'kimya': return Icons.biotech;
+      case 'biyoloji': return Icons.eco;
+      case 'tarih':
+      case 'tarih-1':
+      case 'tarih-2': return Icons.history_edu;
+      case 'coğrafya':
+      case 'coğrafya-1':
+      case 'coğrafya-2': return Icons.public;
+      case 'felsefe': return Icons.psychology;
+      case 'din kültürü': return Icons.mosque;
+      default: return Icons.subject;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Konular'),
+        title: Text(_selectedSubject ?? 'Konular'),
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
@@ -131,7 +172,7 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
 
   Widget _buildExamTypeSelector() {
     return Container(
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Card(
         elevation: 4,
         child: Container(
@@ -140,8 +181,8 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
             borderRadius: BorderRadius.circular(16),
             gradient: LinearGradient(
               colors: [
-                AppTheme.primaryPurple.withOpacity(0.05),
-                AppTheme.primaryBlue.withOpacity(0.05),
+                Theme.of(context).primaryColor.withOpacity(0.05),
+                Theme.of(context).colorScheme.secondary.withOpacity(0.05),
               ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -155,20 +196,13 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      gradient: AppTheme.primaryGradient,
+                      gradient: AppThemes.getGradient(StorageService.getTheme()),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(
-                      Icons.quiz,
-                      color: Colors.white,
-                      size: 20,
-                    ),
+                    child: const Icon(Icons.quiz, color: Colors.white, size: 20),
                   ),
                   const SizedBox(width: 12),
-                  Text(
-                    'Sınav Türü',
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
+                  Text('Sınav Türü', style: Theme.of(context).textTheme.headlineSmall),
                 ],
               ),
               const SizedBox(height: 16),
@@ -212,8 +246,8 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            gradient: isSelected ? AppTheme.primaryGradient : null,
-            color: isSelected ? null : Colors.grey[200],
+            gradient: isSelected ? AppThemes.getGradient(StorageService.getTheme()) : null,
+            color: isSelected ? null : Theme.of(context).colorScheme.surfaceVariant,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected ? Colors.transparent : Colors.grey[300]!,
@@ -223,7 +257,7 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
             text,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: isSelected ? Colors.white : Colors.grey[600],
+              color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
               fontSize: 16,
             ),
@@ -235,7 +269,7 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
 
   Widget _buildSubjectsList() {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(16),
       itemCount: _subjects.length,
       itemBuilder: (context, index) {
         final subject = _subjects[index];
@@ -260,7 +294,7 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      gradient: AppTheme.primaryGradient,
+                      gradient: AppThemes.getGradient(StorageService.getTheme()),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
@@ -277,15 +311,15 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
                         Text(
                           subject,
                           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
                         const SizedBox(height: 8),
                         LinearPercentIndicator(
                           lineHeight: 6,
                           percent: completion / 100,
                           backgroundColor: Colors.grey[300],
-                          linearGradient: AppTheme.primaryGradient,
+                          linearGradient: AppThemes.getGradient(StorageService.getTheme()),
                           barRadius: const Radius.circular(3),
                         ),
                         const SizedBox(height: 4),
@@ -302,12 +336,12 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryPurple.withOpacity(0.1),
+                      color: Theme.of(context).primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.arrow_forward_ios,
-                      color: AppTheme.primaryPurple,
+                      color: Theme.of(context).primaryColor,
                       size: 16,
                     ),
                   ),
@@ -323,9 +357,8 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
   Widget _buildTopicsList() {
     return Column(
       children: [
-        // Header
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
           child: Card(
             elevation: 4,
             child: Padding(
@@ -344,12 +377,12 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
                         icon: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryPurple.withOpacity(0.1),
+                            color: Theme.of(context).primaryColor.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.arrow_back,
-                            color: AppTheme.primaryPurple,
+                            color: Theme.of(context).primaryColor,
                           ),
                         ),
                       ),
@@ -362,7 +395,7 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          gradient: AppTheme.primaryGradient,
+                          gradient: AppThemes.getGradient(StorageService.getTheme()),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -376,13 +409,11 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
                     ],
                   ),
                   const SizedBox(height: 16),
-                  
-                  // İlerleme çubuğu
                   LinearPercentIndicator(
                     lineHeight: 8,
                     percent: _topics.isEmpty ? 0 : _topics.where((t) => t.isCompleted).length / _topics.length,
                     backgroundColor: Colors.grey[300],
-                    linearGradient: AppTheme.primaryGradient,
+                    linearGradient: AppThemes.getGradient(StorageService.getTheme()),
                     barRadius: const Radius.circular(4),
                   ),
                 ],
@@ -390,15 +421,12 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
             ),
           ),
         ),
-        
-        // Konular listesi
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.all(16),
             itemCount: _topics.length,
             itemBuilder: (context, index) {
               final topic = _topics[index];
-              
               return Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 elevation: 1,
@@ -406,10 +434,7 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
                   onTap: () => _toggleTopic(index),
                   borderRadius: BorderRadius.circular(16),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     child: Row(
                       children: [
                         AnimatedContainer(
@@ -419,19 +444,13 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: topic.isCompleted 
-                                ? AppTheme.primaryGradient
+                                ? AppThemes.getGradient(StorageService.getTheme())
                                 : null,
-                            color: topic.isCompleted 
-                                ? null
-                                : Colors.grey[300],
+                            color: topic.isCompleted ? null : Colors.grey[300],
                           ),
                           child: Icon(
-                            topic.isCompleted 
-                                ? Icons.check 
-                                : Icons.radio_button_unchecked,
-                            color: topic.isCompleted 
-                                ? Colors.white 
-                                : Colors.grey[600],
+                            topic.isCompleted ? Icons.check : Icons.radio_button_unchecked,
+                            color: topic.isCompleted ? Colors.white : Colors.grey[600],
                             size: 20,
                           ),
                         ),
@@ -444,21 +463,14 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
                                 topic.name,
                                 style: TextStyle(
                                   fontWeight: FontWeight.w500,
-                                  decoration: topic.isCompleted 
-                                      ? TextDecoration.lineThrough 
-                                      : null,
-                                  color: topic.isCompleted 
-                                      ? Colors.grey[600] 
-                                      : null,
+                                  decoration: topic.isCompleted ? TextDecoration.lineThrough : null,
+                                  color: topic.isCompleted ? Colors.grey[600] : null,
                                 ),
                               ),
                               if (topic.questionsSolved > 0) 
                                 Text(
                                   '${topic.questionsSolved} soru çözüldü',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                  ),
+                                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                                 ),
                             ],
                           ),
@@ -472,11 +484,7 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
                             ),
                             child: const Text(
                               'Tamamlandı',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.green,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: TextStyle(fontSize: 10, color: Colors.green, fontWeight: FontWeight.w600),
                             ),
                           ),
                       ],
@@ -491,47 +499,13 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
     );
   }
 
-  IconData _getSubjectIcon(String subject) {
-    switch (subject) {
-      case 'Matematik':
-        return Icons.calculate;
-      case 'Türkçe':
-      case 'Türk Dili ve Edebiyatı':
-        return Icons.menu_book;
-      case 'Geometri':
-        return Icons.square_foot;
-      case 'Fizik':
-        return Icons.science;
-      case 'Kimya':
-        return Icons.biotech;
-      case 'Biyoloji':
-        return Icons.eco;
-      case 'Tarih':
-      case 'Tarih-1':
-      case 'Tarih-2':
-        return Icons.history_edu;
-      case 'Coğrafya':
-      case 'Coğrafya-1':
-      case 'Coğrafya-2':
-        return Icons.public;
-      case 'Felsefe':
-        return Icons.psychology;
-      case 'Din Kültürü':
-        return Icons.mosque;
-      default:
-        return Icons.subject;
-    }
-  }
-
   void _toggleTopic(int index) {
     setState(() {
       _topics[index].isCompleted = !_topics[index].isCompleted;
     });
     
-    // Değişiklikleri kaydet
     StorageService.saveTopicProgress(_selectedExamType, _selectedSubject!, _topics);
     
-    // Başarı mesajı göster
     final message = _topics[index].isCompleted 
         ? 'Konu tamamlandı! 🎉'
         : 'Konu tamamlanmamış olarak işaretlendi';
@@ -545,15 +519,10 @@ class _TopicsScreenState extends State<TopicsScreen> with TickerProviderStateMix
               color: Colors.white,
             ),
             const SizedBox(width: 12),
-            Text(
-              message,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
+            Text(message, style: const TextStyle(fontWeight: FontWeight.w600)),
           ],
         ),
-        backgroundColor: _topics[index].isCompleted 
-            ? Colors.green 
-            : Colors.orange,
+        backgroundColor: _topics[index].isCompleted ? Colors.green : Colors.orange,
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(

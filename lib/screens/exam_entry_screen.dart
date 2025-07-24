@@ -1,3 +1,5 @@
+// lib/screens/exam_entry_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../utils/constants.dart';
@@ -31,8 +33,6 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
     _selectedDate = DateTime.now();
     _setupAnimations();
     _initializeInputs();
-    // Varsayılan deneme adı
-    _examNameController.text = '${_selectedExamType} Denemesi ${DateFormat('dd/MM').format(DateTime.now())}';
   }
 
   void _setupAnimations() {
@@ -59,117 +59,6 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
     super.dispose();
   }
 
-  Widget _buildExamInfoSection() {
-    return Card(
-      elevation: 4,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [
-              AppTheme.primaryPurple.withOpacity(0.05),
-              AppTheme.primaryBlue.withOpacity(0.05),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    gradient: AppTheme.primaryGradient,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.assignment,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  'Deneme Bilgileri',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey[300]!),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: TextField(
-                controller: _examNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Deneme Adı',
-                  prefixIcon: Icon(Icons.edit, color: AppTheme.primaryPurple),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.all(16),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            InkWell(
-              onTap: _selectDate,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey[300]!),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.calendar_today, color: AppTheme.primaryBlue),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Deneme Tarihi',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          DateFormat('dd MMMM yyyy', 'tr_TR').format(_selectedDate),
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _selectDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime.now().subtract(const Duration(days: 365)),
-      lastDate: DateTime.now().add(const Duration(days: 30)),
-      locale: const Locale('tr', 'TR'),
-    );
-
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
-  }
-
   void _initializeInputs() {
     setState(() {
       _subjectInputs.clear();
@@ -184,8 +73,6 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
           'empty': 0,
         };
       }
-
-      // Deneme adını güncelle
       _examNameController.text = '${_selectedExamType} Denemesi ${DateFormat('dd/MM').format(DateTime.now())}';
     });
     _calculateTotals();
@@ -228,12 +115,12 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
           icon: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppTheme.primaryPurple.withOpacity(0.1),
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.arrow_back,
-              color: AppTheme.primaryPurple,
+              color: Theme.of(context).primaryColor,
             ),
           ),
         ),
@@ -278,8 +165,8 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: [
-              AppTheme.accentBlue.withOpacity(0.05),
-              AppTheme.secondaryPurple.withOpacity(0.05),
+              Theme.of(context).colorScheme.secondary.withOpacity(0.05),
+              Theme.of(context).primaryColor.withOpacity(0.05),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -293,20 +180,13 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    gradient: AppTheme.secondaryGradient,
+                    gradient: AppThemes.getGradient(StorageService.getTheme()),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
-                    Icons.quiz,
-                    color: Colors.white,
-                    size: 20,
-                  ),
+                  child: const Icon(Icons.quiz, color: Colors.white, size: 20),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'Deneme Türü',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
+                Text('Deneme Türü', style: Theme.of(context).textTheme.headlineSmall),
               ],
             ),
             const SizedBox(height: 16),
@@ -314,18 +194,14 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
               children: [
                 Expanded(
                   child: _buildToggleButton('TYT', _selectedExamType == 'TYT', () {
-                    setState(() {
-                      _selectedExamType = 'TYT';
-                    });
+                    setState(() => _selectedExamType = 'TYT');
                     _initializeInputs();
                   }),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _buildToggleButton('AYT', _selectedExamType == 'AYT', () {
-                    setState(() {
-                      _selectedExamType = 'AYT';
-                    });
+                    setState(() => _selectedExamType = 'AYT');
                     _initializeInputs();
                   }),
                 ),
@@ -347,8 +223,8 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            gradient: isSelected ? AppTheme.primaryGradient : null,
-            color: isSelected ? null : Colors.grey[200],
+            gradient: isSelected ? AppThemes.getGradient(StorageService.getTheme()) : null,
+            color: isSelected ? null : Theme.of(context).colorScheme.surfaceVariant,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected ? Colors.transparent : Colors.grey[300]!,
@@ -358,7 +234,7 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
             text,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: isSelected ? Colors.white : Colors.grey[600],
+              color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
               fontSize: 16,
             ),
@@ -368,15 +244,124 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
     );
   }
 
+  Widget _buildExamInfoSection() {
+    return Card(
+      elevation: 4,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).primaryColor.withOpacity(0.05),
+              Theme.of(context).colorScheme.secondary.withOpacity(0.05),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: AppThemes.getGradient(StorageService.getTheme()),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.assignment, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Text('Deneme Bilgileri', style: Theme.of(context).textTheme.headlineSmall),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: TextField(
+                controller: _examNameController,
+                decoration: InputDecoration(
+                  labelText: 'Deneme Adı',
+                  prefixIcon: Icon(Icons.edit, color: Theme.of(context).primaryColor),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.all(16),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            InkWell(
+              onTap: _selectDate,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.calendar_today, color: Theme.of(context).colorScheme.secondary),
+                    const SizedBox(width: 12),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Deneme Tarihi',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          DateFormat('dd MMMM yyyy', 'tr_TR').format(_selectedDate),
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _selectDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime.now().subtract(const Duration(days: 365)),
+      lastDate: DateTime.now().add(const Duration(days: 30)),
+      locale: const Locale('tr', 'TR'),
+    );
+
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
   Widget _buildResultCard() {
     return Card(
       elevation: 8,
-      shadowColor: AppTheme.secondaryPurple.withOpacity(0.3),
+      shadowColor: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          gradient: AppTheme.secondaryGradient,
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).colorScheme.secondary,
+              Theme.of(context).primaryColor,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -387,29 +372,14 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
                 color: Colors.white.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(50),
               ),
-              child: const Icon(
-                Icons.assignment_turned_in,
-                color: Colors.white,
-                size: 32,
-              ),
+              child: const Icon(Icons.assignment_turned_in, color: Colors.white, size: 32),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Toplam Net',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            const Text('Toplam Net', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             Text(
               _totalNet.toStringAsFixed(2),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 42,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(color: Colors.white, fontSize: 42, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Container(
@@ -420,11 +390,7 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
               ),
               child: Text(
                 'Toplam $_totalQuestions soru',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
               ),
             ),
           ],
@@ -439,10 +405,7 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: Text(
-            'Ders Bazlı Giriş',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
+          child: Text('Ders Bazlı Giriş', style: Theme.of(context).textTheme.headlineSmall),
         ),
         const SizedBox(height: 16),
         ..._questionCounts.entries.map((entry) {
@@ -462,35 +425,28 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryPurple.withOpacity(0.1),
+                          color: Theme.of(context).primaryColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Icon(
-                          _getSubjectIcon(subject),
-                          color: AppTheme.primaryPurple,
-                          size: 20,
-                        ),
+                        child: Icon(_getSubjectIcon(subject), color: Theme.of(context).primaryColor, size: 20),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           subject,
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.grey[200],
+                          color: Theme.of(context).colorScheme.surfaceVariant,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           '$totalQuestions soru',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
@@ -498,49 +454,18 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      Expanded(
-                        child: _buildInputField(
-                          subject: subject,
-                          type: 'correct',
-                          label: 'Doğru',
-                          icon: Icons.check_circle,
-                          color: Colors.green,
-                        ),
-                      ),
+                      Expanded(child: _buildInputField(subject: subject, type: 'correct', label: 'Doğru', icon: Icons.check_circle, color: Colors.green)),
                       const SizedBox(width: 8),
-                      Expanded(
-                        child: _buildInputField(
-                          subject: subject,
-                          type: 'wrong',
-                          label: 'Yanlış',
-                          icon: Icons.cancel,
-                          color: Colors.red,
-                        ),
-                      ),
+                      Expanded(child: _buildInputField(subject: subject, type: 'wrong', label: 'Yanlış', icon: Icons.cancel, color: Colors.red)),
                       const SizedBox(width: 8),
-                      Expanded(
-                        child: _buildInputField(
-                          subject: subject,
-                          type: 'empty',
-                          label: 'Boş',
-                          icon: Icons.radio_button_unchecked,
-                          color: Colors.orange,
-                        ),
-                      ),
+                      Expanded(child: _buildInputField(subject: subject, type: 'empty', label: 'Boş', icon: Icons.radio_button_unchecked, color: Colors.orange)),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppTheme.primaryPurple.withOpacity(0.1),
-                          AppTheme.primaryBlue.withOpacity(0.1),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                      color: Theme.of(context).primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -549,15 +474,13 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
                         Text(
                           'Net: ${(_subjectInputs[subject]!['correct']! - (_subjectInputs[subject]!['wrong']! / 4)).toStringAsFixed(2)}',
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.primaryPurple,
-                          ),
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context).primaryColor,
+                              ),
                         ),
                         Text(
                           'Toplam: ${_subjectInputs[subject]!['correct']! + _subjectInputs[subject]!['wrong']! + _subjectInputs[subject]!['empty']!}/$totalQuestions',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                         ),
                       ],
                     ),
@@ -571,31 +494,25 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
     );
   }
 
-  Widget _buildInputField({
-    required String subject,
-    required String type,
-    required String label,
-    required IconData icon,
-    required Color color,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
+  Widget _buildInputField({required String subject, required String type, required String label, required IconData icon, required Color color}) {
+    return SizedBox(
+      height: 60,
       child: TextField(
         keyboardType: TextInputType.number,
         textAlign: TextAlign.center,
-        style: TextStyle(
-          color: color,
-          fontWeight: FontWeight.bold,
-        ),
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: color, fontSize: 12),
-          prefixIcon: Icon(icon, color: color, size: 16),
-          border: InputBorder.none,
+          labelStyle: TextStyle(color: color, fontSize: 10),
+          prefixIcon: Icon(icon, color: color, size: 14),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: color.withOpacity(0.3)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: color),
+          ),
           contentPadding: const EdgeInsets.symmetric(vertical: 8),
           isDense: true,
         ),
@@ -615,20 +532,12 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
       child: ElevatedButton.icon(
         onPressed: isValid ? _saveExam : null,
         icon: const Icon(Icons.save),
-        label: const Text(
-          'Denemeyi Kaydet',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        label: const Text('Denemeyi Kaydet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 18),
-          backgroundColor: isValid ? AppTheme.primaryPurple : Colors.grey[300],
+          backgroundColor: isValid ? Theme.of(context).primaryColor : Colors.grey[300],
           foregroundColor: isValid ? Colors.white : Colors.grey[600],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: isValid ? 4 : 0,
         ),
       ),
@@ -637,52 +546,24 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
 
   IconData _getSubjectIcon(String subject) {
     switch (subject) {
-      case 'Matematik':
-        return Icons.calculate;
-      case 'Türkçe':
-      case 'Türk Dili ve Edebiyatı':
-        return Icons.menu_book;
-      case 'Geometri':
-        return Icons.square_foot;
-      case 'Fizik':
-        return Icons.science;
-      case 'Kimya':
-        return Icons.biotech;
-      case 'Biyoloji':
-        return Icons.eco;
-      case 'Tarih':
-      case 'Tarih-1':
-      case 'Tarih-2':
-        return Icons.history_edu;
-      case 'Coğrafya':
-      case 'Coğrafya-1':
-      case 'Coğrafya-2':
-        return Icons.public;
-      case 'Felsefe':
-        return Icons.psychology;
-      case 'Din Kültürü':
-        return Icons.mosque;
-      default:
-        return Icons.subject;
+      case 'Türkçe': return Icons.menu_book;
+      case 'Sosyal Bilimler': return Icons.public;
+      case 'Matematik': return Icons.calculate;
+      case 'Fen Bilimleri': return Icons.science;
+      case 'Türk Dili ve Edebiyatı-Sosyal Bilimler-1': return Icons.library_books;
+      case 'Sosyal Bilimler-2': return Icons.history_edu;
+      default: return Icons.subject;
     }
   }
 
   Future<void> _saveExam() async {
     if (_totalQuestions == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Row(
-            children: [
-              Icon(Icons.warning, color: Colors.white),
-              SizedBox(width: 12),
-              Text('En az bir soru girmelisiniz'),
-            ],
-          ),
+        const SnackBar(
+          content: Row(children: [Icon(Icons.warning, color: Colors.white), SizedBox(width: 12), Text('En az bir soru girmelisiniz')]),
           backgroundColor: Colors.orange,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
         ),
       );
       return;
@@ -690,19 +571,11 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
 
     if (_examNameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Row(
-            children: [
-              Icon(Icons.warning, color: Colors.white),
-              SizedBox(width: 12),
-              Text('Deneme adı girmelisiniz'),
-            ],
-          ),
+        const SnackBar(
+          content: Row(children: [Icon(Icons.warning, color: Colors.white), SizedBox(width: 12), Text('Deneme adı girmelisiniz')]),
           backgroundColor: Colors.orange,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
         ),
       );
       return;
@@ -728,13 +601,10 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
           isExam: true,
           examType: _selectedExamType,
         );
-
-        // Her dersin sonucunu ayrı ayrı kaydet
         await StorageService.saveStudySession(subjectResults[subject]!);
       }
     }
 
-    // Deneme sonucunu kaydet
     final examResult = ExamResult(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       examType: _selectedExamType,
@@ -753,19 +623,12 @@ class _ExamEntryScreenState extends State<ExamEntryScreen> with TickerProviderSt
             children: [
               const Icon(Icons.check_circle, color: Colors.white),
               const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  '${examResult.examName} kaydedildi! Net: ${_totalNet.toStringAsFixed(2)}',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
+              Expanded(child: Text('${examResult.examName} kaydedildi! Net: ${_totalNet.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w600))),
             ],
           ),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
         ),
       );
       Navigator.pop(context);

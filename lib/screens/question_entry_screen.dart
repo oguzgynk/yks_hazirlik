@@ -1,3 +1,5 @@
+// lib/screens/question_entry_screen.dart
+
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
 import '../utils/theme.dart';
@@ -99,12 +101,12 @@ class _QuestionEntryScreenState extends State<QuestionEntryScreen> with TickerPr
           icon: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppTheme.primaryPurple.withOpacity(0.1),
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.arrow_back,
-              color: AppTheme.primaryPurple,
+              color: Theme.of(context).primaryColor,
             ),
           ),
         ),
@@ -151,8 +153,8 @@ class _QuestionEntryScreenState extends State<QuestionEntryScreen> with TickerPr
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: [
-              AppTheme.primaryPurple.withOpacity(0.05),
-              AppTheme.primaryBlue.withOpacity(0.05),
+              Theme.of(context).primaryColor.withOpacity(0.05),
+              Theme.of(context).colorScheme.secondary.withOpacity(0.05),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -166,20 +168,13 @@ class _QuestionEntryScreenState extends State<QuestionEntryScreen> with TickerPr
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    gradient: AppTheme.primaryGradient,
+                    gradient: AppThemes.getGradient(StorageService.getTheme()),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
-                    Icons.quiz,
-                    color: Colors.white,
-                    size: 20,
-                  ),
+                  child: const Icon(Icons.quiz, color: Colors.white, size: 20),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'Sınav Türü',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
+                Text('Sınav Türü', style: Theme.of(context).textTheme.headlineSmall),
               ],
             ),
             const SizedBox(height: 16),
@@ -222,8 +217,8 @@ class _QuestionEntryScreenState extends State<QuestionEntryScreen> with TickerPr
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            gradient: isSelected ? AppTheme.primaryGradient : null,
-            color: isSelected ? null : Colors.grey[200],
+            gradient: isSelected ? AppThemes.getGradient(StorageService.getTheme()) : null,
+            color: isSelected ? null : Theme.of(context).colorScheme.surfaceVariant,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected ? Colors.transparent : Colors.grey[300]!,
@@ -233,7 +228,7 @@ class _QuestionEntryScreenState extends State<QuestionEntryScreen> with TickerPr
             text,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: isSelected ? Colors.white : Colors.grey[600],
+              color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
               fontSize: 16,
             ),
@@ -256,20 +251,13 @@ class _QuestionEntryScreenState extends State<QuestionEntryScreen> with TickerPr
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryBlue.withOpacity(0.1),
+                    color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
-                    Icons.school,
-                    color: AppTheme.primaryBlue,
-                    size: 20,
-                  ),
+                  child: Icon(Icons.school, color: Theme.of(context).colorScheme.secondary, size: 20),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'Ders Seçin',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
+                Text('Ders Seçin', style: Theme.of(context).textTheme.headlineSmall),
               ],
             ),
             const SizedBox(height: 16),
@@ -280,18 +268,18 @@ class _QuestionEntryScreenState extends State<QuestionEntryScreen> with TickerPr
               ),
               child: DropdownButtonFormField<String>(
                 value: _selectedSubject,
-                decoration: const InputDecoration(
-                  hintText: 'Ders seçin...',
-                  prefixIcon: Icon(Icons.school, color: AppTheme.primaryBlue),
+                decoration: InputDecoration(
+                  hintText: 'İsteğe bağlı - Ders seçin...',
+                  prefixIcon: Icon(Icons.school, color: Theme.of(context).colorScheme.secondary),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.all(16),
+                  contentPadding: const EdgeInsets.all(16),
                 ),
-                items: _subjects.map((subject) {
-                  return DropdownMenuItem(
-                    value: subject,
-                    child: Text(subject),
-                  );
-                }).toList(),
+                items: [
+                  const DropdownMenuItem<String>(value: null, child: Text('Ders seçilmeyecek')),
+                  ...(_subjects.map((subject) {
+                    return DropdownMenuItem(value: subject, child: Text(subject));
+                  }).toList()),
+                ],
                 onChanged: (value) {
                   setState(() {
                     _selectedSubject = value;
@@ -319,20 +307,13 @@ class _QuestionEntryScreenState extends State<QuestionEntryScreen> with TickerPr
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppTheme.accentBlue.withOpacity(0.1),
+                    color: Colors.teal.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
-                    Icons.topic,
-                    color: AppTheme.accentBlue,
-                    size: 20,
-                  ),
+                  child: Icon(Icons.topic, color: Colors.teal, size: 20),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'Konu Seçin',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
+                Text('Konu Seçin', style: Theme.of(context).textTheme.headlineSmall),
               ],
             ),
             const SizedBox(height: 16),
@@ -343,22 +324,26 @@ class _QuestionEntryScreenState extends State<QuestionEntryScreen> with TickerPr
               ),
               child: DropdownButtonFormField<String>(
                 value: _selectedTopic,
-                decoration: const InputDecoration(
-                  hintText: 'Konu seçin...',
-                  prefixIcon: Icon(Icons.topic, color: AppTheme.accentBlue),
+                decoration: InputDecoration(
+                  hintText: 'İsteğe bağlı - Konu seçin...',
+                  prefixIcon: Icon(Icons.topic, color: Colors.teal),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.all(16),
+                  contentPadding: const EdgeInsets.all(16),
                 ),
-                items: _topics.map((topic) {
-                  return DropdownMenuItem(
-                    value: topic,
-                    child: Text(
-                      topic,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  );
-                }).toList(),
-                onChanged: _selectedSubject == null ? null : (value) {
+                isExpanded: true,
+                items: [
+                  const DropdownMenuItem<String>(value: null, child: Text('Konu seçilmeyecek')),
+                  ...(_topics.map((topic) {
+                    return DropdownMenuItem(
+                      value: topic,
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Text(topic, overflow: TextOverflow.ellipsis, maxLines: 1, style: const TextStyle(fontSize: 14)),
+                      ),
+                    );
+                  }).toList()),
+                ],
+                onChanged: (value) {
                   setState(() {
                     _selectedTopic = value;
                   });
@@ -384,51 +369,23 @@ class _QuestionEntryScreenState extends State<QuestionEntryScreen> with TickerPr
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppTheme.secondaryPurple.withOpacity(0.1),
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
-                    Icons.edit,
-                    color: AppTheme.secondaryPurple,
-                    size: 20,
-                  ),
+                  child: Icon(Icons.edit, color: Theme.of(context).primaryColor, size: 20),
                 ),
                 const SizedBox(width: 12),
-                Text(
-                  'Soru Bilgileri',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
+                Text('Soru Bilgileri', style: Theme.of(context).textTheme.headlineSmall),
               ],
             ),
             const SizedBox(height: 20),
             Row(
               children: [
-                Expanded(
-                  child: _buildInputField(
-                    controller: _correctController,
-                    label: 'Doğru',
-                    icon: Icons.check_circle,
-                    color: Colors.green,
-                  ),
-                ),
+                Expanded(child: _buildInputField(controller: _correctController, label: 'Doğru', icon: Icons.check_circle, color: Colors.green)),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: _buildInputField(
-                    controller: _wrongController,
-                    label: 'Yanlış',
-                    icon: Icons.cancel,
-                    color: Colors.red,
-                  ),
-                ),
+                Expanded(child: _buildInputField(controller: _wrongController, label: 'Yanlış', icon: Icons.cancel, color: Colors.red)),
                 const SizedBox(width: 12),
-                Expanded(
-                  child: _buildInputField(
-                    controller: _emptyController,
-                    label: 'Boş',
-                    icon: Icons.radio_button_unchecked,
-                    color: Colors.orange,
-                  ),
-                ),
+                Expanded(child: _buildInputField(controller: _emptyController, label: 'Boş', icon: Icons.radio_button_unchecked, color: Colors.orange)),
               ],
             ),
           ],
@@ -437,33 +394,22 @@ class _QuestionEntryScreenState extends State<QuestionEntryScreen> with TickerPr
     );
   }
 
-  Widget _buildInputField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    required Color color,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
+  Widget _buildInputField({required TextEditingController controller, required String label, required IconData icon, required Color color}) {
+    return SizedBox(
+      height: 70,
       child: TextField(
         controller: controller,
         keyboardType: TextInputType.number,
         textAlign: TextAlign.center,
-        style: TextStyle(
-          color: color,
-          fontWeight: FontWeight.bold,
-          fontSize: 18,
-        ),
+        style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: color),
-          prefixIcon: Icon(icon, color: color),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(16),
+          labelStyle: TextStyle(color: color, fontSize: 12),
+          prefixIcon: Icon(icon, color: color, size: 18),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+          filled: true,
+          fillColor: color.withOpacity(0.1),
+          contentPadding: const EdgeInsets.symmetric(vertical: 12),
         ),
       ),
     );
@@ -472,61 +418,34 @@ class _QuestionEntryScreenState extends State<QuestionEntryScreen> with TickerPr
   Widget _buildResultCard() {
     return Card(
       elevation: 8,
-      shadowColor: AppTheme.secondaryPurple.withOpacity(0.3),
+      shadowColor: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          gradient: AppTheme.secondaryGradient,
+          gradient: LinearGradient(
+            colors: [Theme.of(context).colorScheme.secondary, Theme.of(context).primaryColor],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
           children: [
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(50),
-              ),
-              child: const Icon(
-                Icons.calculate,
-                color: Colors.white,
-                size: 32,
-              ),
+              decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(50)),
+              child: const Icon(Icons.calculate, color: Colors.white, size: 32),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Net Sonuç',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            const Text('Net Sonuç', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
-            Text(
-              _netScore.toStringAsFixed(2),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 42,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+            Text(_netScore.toStringAsFixed(2), style: const TextStyle(color: Colors.white, fontSize: 42, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                'Toplam $_totalQuestions soru',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(20)),
+              child: Text('Toplam $_totalQuestions soru', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500)),
             ),
           ],
         ),
@@ -535,29 +454,18 @@ class _QuestionEntryScreenState extends State<QuestionEntryScreen> with TickerPr
   }
 
   Widget _buildSaveButton() {
-    final isValid = _selectedSubject != null && 
-                   _selectedTopic != null && 
-                   _totalQuestions > 0;
-
+    final isValid = _totalQuestions > 0;
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: isValid ? _saveSession : null,
         icon: const Icon(Icons.save),
-        label: const Text(
-          'Kaydet',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        label: const Text('Kaydet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 18),
-          backgroundColor: isValid ? AppTheme.primaryPurple : Colors.grey[300],
+          backgroundColor: isValid ? Theme.of(context).primaryColor : Colors.grey[300],
           foregroundColor: isValid ? Colors.white : Colors.grey[600],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           elevation: isValid ? 4 : 0,
         ),
       ),
@@ -572,18 +480,10 @@ class _QuestionEntryScreenState extends State<QuestionEntryScreen> with TickerPr
     if (correct + wrong + empty == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Row(
-            children: [
-              Icon(Icons.warning, color: Colors.white),
-              SizedBox(width: 12),
-              Text('En az bir soru girmelisiniz'),
-            ],
-          ),
+          content: const Row(children: [Icon(Icons.warning, color: Colors.white), SizedBox(width: 12), Text('En az bir soru girmelisiniz')]),
           backgroundColor: Colors.orange,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       return;
@@ -591,9 +491,9 @@ class _QuestionEntryScreenState extends State<QuestionEntryScreen> with TickerPr
 
     final session = StudySession(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      subject: _selectedSubject!,
-      topic: _selectedTopic!,
-      duration: 0, // Soru girişinde süre yok
+      subject: _selectedSubject ?? 'Genel',
+      topic: _selectedTopic ?? 'Genel',
+      duration: 0,
       correctAnswers: correct,
       wrongAnswers: wrong,
       emptyAnswers: empty,
@@ -602,20 +502,18 @@ class _QuestionEntryScreenState extends State<QuestionEntryScreen> with TickerPr
 
     await StorageService.saveStudySession(session);
 
-    // Konu ilerlemesini güncelle
-    final topicProgress = StorageService.getTopicProgress(_selectedExamType, _selectedSubject!);
-    final topicIndex = topicProgress.indexWhere((t) => t.name == _selectedTopic);
-    
-    if (topicIndex != -1) {
-      topicProgress[topicIndex].questionsSolved += (correct + wrong + empty);
-    } else {
-      topicProgress.add(Topic(
-        name: _selectedTopic!,
-        questionsSolved: correct + wrong + empty,
-      ));
+    if (_selectedSubject != null && _selectedTopic != null) {
+      final topicProgress = StorageService.getTopicProgress(_selectedExamType, _selectedSubject!);
+      final topicIndex = topicProgress.indexWhere((t) => t.name == _selectedTopic);
+      
+      if (topicIndex != -1) {
+        topicProgress[topicIndex].questionsSolved += (correct + wrong + empty);
+      } else {
+        topicProgress.add(Topic(name: _selectedTopic!, questionsSolved: correct + wrong + empty));
+      }
+      
+      await StorageService.saveTopicProgress(_selectedExamType, _selectedSubject!, topicProgress);
     }
-    
-    await StorageService.saveTopicProgress(_selectedExamType, _selectedSubject!, topicProgress);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -624,19 +522,12 @@ class _QuestionEntryScreenState extends State<QuestionEntryScreen> with TickerPr
             children: [
               const Icon(Icons.check_circle, color: Colors.white),
               const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Soru girişi kaydedildi! Net: ${_netScore.toStringAsFixed(2)}',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
+              Expanded(child: Text('Soru girişi kaydedildi! Net: ${_netScore.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w600))),
             ],
           ),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
       Navigator.pop(context);

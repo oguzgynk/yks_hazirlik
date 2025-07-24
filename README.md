@@ -1,4 +1,4 @@
-# YKS Hazırlık Uygulaması
+# YKS Asistanım Uygulaması
 
 YKS sınavına hazırlanan öğrenciler için geliştirilmiş kapsamlı bir mobil uygulama. Flutter framework'ü kullanılarak geliştirilmiştir.
 
@@ -360,4 +360,4 @@ Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için `LICENSE` dosy
 
 ---
 
-**YKS Hazırlık Uygulaması v2.0** ile başarıya giden yolda öğrencilerin yanındayız! 🎯📚✨
+**YKS Asistanım Uygulaması v2.0** ile başarıya giden yolda öğrencilerin yanındayız! 🎯📚✨

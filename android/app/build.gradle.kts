@@ -155,6 +155,7 @@ flutter {
 // Uygulama bağımlılıkları
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7") // DOĞRU.
+    implementation("com.google.android.play:core:1.10.3") 
 
     // Google Play Services (örneğin AdMob için)
     implementation("com.google.android.gms:play-services-ads:22.6.0") // DOĞRU.

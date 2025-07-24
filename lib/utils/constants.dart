@@ -6,7 +6,7 @@ class AppConstants {
   
   // AdMob IDs (Test IDs)
   static const String bannerAdUnitId = 'ca-app-pub-3940256099942544/6300978111';
-  static const String interstitialAdUnitId = 'ca-app-pub-3940256099942544/1033173712';
+  static const String interstitialAdUnitId = 'ca-app-pub-3940256099942544/1033173712';  
   
   // Premium fiyat
   static const String premiumProductId = 'remove_ads_premium';
@@ -206,8 +206,23 @@ class AppConstants {
     ],
   };
   
-  // Sınav soru sayıları
+  // YENİ DENEME SİSTEMİ İÇİN SORU SAYILARI
   static Map<String, int> tytQuestionCounts = {
+    'Türkçe': 40,
+    'Sosyal Bilimler': 20,
+    'Matematik': 40,
+    'Fen Bilimleri': 20,
+  };
+  
+  static Map<String, int> aytQuestionCounts = {
+    'Türk Dili ve Edebiyatı-Sosyal Bilimler-1': 40,
+    'Sosyal Bilimler-2': 40,
+    'Matematik': 40,
+    'Fen Bilimleri': 40,
+  };
+
+  // ESKİ SİSTEM İÇİN KONU ÇALIŞMASINDA KULLANILACAK
+  static Map<String, int> oldTytQuestionCounts = {
     'Türkçe': 40,
     'Matematik': 28,
     'Geometri': 12,
@@ -220,7 +235,7 @@ class AppConstants {
     'Din Kültürü': 5,
   };
   
-  static Map<String, int> aytQuestionCounts = {
+  static Map<String, int> oldAytQuestionCounts = {
     'Matematik': 28,
     'Geometri': 12,
     'Türk Dili ve Edebiyatı': 24,
@@ -233,5 +248,20 @@ class AppConstants {
     'Fizik': 14,
     'Kimya': 13,
     'Biyoloji': 13,
+  };
+
+  // YENİ DENEME SİSTEMİ İÇİN ALT DERS GRUPLARI
+  static Map<String, List<String>> tytSubSubjects = {
+    'Türkçe': ['Türkçe'],
+    'Sosyal Bilimler': ['Tarih', 'Coğrafya', 'Felsefe', 'Din Kültürü'],
+    'Matematik': ['Matematik', 'Geometri'],
+    'Fen Bilimleri': ['Fizik', 'Kimya', 'Biyoloji'],
+  };
+
+  static Map<String, List<String>> aytSubSubjects = {
+    'Türk Dili ve Edebiyatı-Sosyal Bilimler-1': ['Türk Dili ve Edebiyatı', 'Tarih-1', 'Coğrafya-1'],
+    'Sosyal Bilimler-2': ['Tarih-2', 'Coğrafya-2', 'Felsefe', 'Din Kültürü'],
+    'Matematik': ['Matematik', 'Geometri'],
+    'Fen Bilimleri': ['Fizik', 'Kimya', 'Biyoloji'],
   };
 }

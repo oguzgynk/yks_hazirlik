@@ -1,6 +1,9 @@
+// lib/screens/net_calculator_screen.dart
+
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
 import '../utils/theme.dart';
+import '../services/storage_service.dart';
 
 class NetCalculatorScreen extends StatefulWidget {
   const NetCalculatorScreen({super.key});
@@ -43,9 +46,7 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
   void _initializeInputs() {
     setState(() {
       _subjectInputs.clear();
-      final subjects = _selectedExamType == 'TYT' 
-          ? AppConstants.tytQuestionCounts 
-          : AppConstants.aytQuestionCounts;
+      final subjects = _getQuestionCounts();
       
       for (String subject in subjects.keys) {
         _subjectInputs[subject] = {
@@ -92,12 +93,12 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
     });
   }
 
-  Map<String, int> get _questionCounts {
-    return _selectedExamType == 'TYT' 
-        ? AppConstants.tytQuestionCounts 
+  Map<String, int> _getQuestionCounts() {
+    return _selectedExamType == 'TYT'
+        ? AppConstants.tytQuestionCounts
         : AppConstants.aytQuestionCounts;
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,8 +108,8 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
         backgroundColor: Colors.transparent,
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppTheme.primaryPurple,
-          labelColor: AppTheme.primaryPurple,
+          indicatorColor: Theme.of(context).primaryColor,
+          labelColor: Theme.of(context).primaryColor,
           unselectedLabelColor: Colors.grey,
           tabs: const [
             Tab(
@@ -139,14 +140,14 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
         children: [
           Card(
             elevation: 8,
-            shadowColor: AppTheme.primaryPurple.withOpacity(0.3),
+            shadowColor: Theme.of(context).primaryColor.withOpacity(0.3),
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppTheme.primaryPurple.withOpacity(0.1),
-                    AppTheme.primaryBlue.withOpacity(0.05),
+                    Theme.of(context).primaryColor.withOpacity(0.1),
+                    Theme.of(context).colorScheme.secondary.withOpacity(0.05),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -161,29 +162,20 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          gradient: AppTheme.primaryGradient,
+                          gradient: AppThemes.getGradient(StorageService.getTheme()),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(
-                          Icons.speed,
-                          color: Colors.white,
-                          size: 24,
-                        ),
+                        child: const Icon(Icons.speed, color: Colors.white, size: 24),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'Hızlı Net Hesaplama',
-                              style: Theme.of(context).textTheme.headlineSmall,
-                            ),
+                            Text('Hızlı Net Hesaplama', style: Theme.of(context).textTheme.headlineSmall),
                             Text(
                               'Doğru ve yanlış sayısını girerek hızlıca net hesaplayın',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.grey[600],
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                             ),
                           ],
                         ),
@@ -193,32 +185,11 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
                   const SizedBox(height: 24),
                   Row(
                     children: [
-                      Expanded(
-                        child: _buildInputField(
-                          controller: _quickCorrectController,
-                          label: 'Doğru',
-                          icon: Icons.check_circle,
-                          color: Colors.green,
-                        ),
-                      ),
+                      Expanded(child: _buildInputField(controller: _quickCorrectController, label: 'Doğru', icon: Icons.check_circle, color: Colors.green)),
                       const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildInputField(
-                          controller: _quickWrongController,
-                          label: 'Yanlış',
-                          icon: Icons.cancel,
-                          color: Colors.red,
-                        ),
-                      ),
+                      Expanded(child: _buildInputField(controller: _quickWrongController, label: 'Yanlış', icon: Icons.cancel, color: Colors.red)),
                       const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildInputField(
-                          controller: _quickEmptyController,
-                          label: 'Boş',
-                          icon: Icons.radio_button_unchecked,
-                          color: Colors.orange,
-                        ),
-                      ),
+                      Expanded(child: _buildInputField(controller: _quickEmptyController, label: 'Boş', icon: Icons.radio_button_unchecked, color: Colors.orange)),
                     ],
                   ),
                 ],
@@ -226,16 +197,14 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
             ),
           ),
           const SizedBox(height: 24),
-          
-          // Sonuç kartı
           Card(
             elevation: 12,
-            shadowColor: AppTheme.primaryPurple.withOpacity(0.4),
+            shadowColor: Theme.of(context).primaryColor.withOpacity(0.4),
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                gradient: AppTheme.primaryGradient,
+                gradient: AppThemes.getGradient(StorageService.getTheme()),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -246,29 +215,14 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(50),
                     ),
-                    child: const Icon(
-                      Icons.calculate,
-                      color: Colors.white,
-                      size: 48,
-                    ),
+                    child: const Icon(Icons.calculate, color: Colors.white, size: 48),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Net Sonuç',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  const Text('Net Sonuç', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 12),
                   Text(
                     _quickNet.toStringAsFixed(2),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 56,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(color: Colors.white, fontSize: 56, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Container(
@@ -279,21 +233,14 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
                     ),
                     child: const Text(
                       'Net = Doğru - (Yanlış ÷ 4)',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
                     ),
                   ),
                 ],
               ),
             ),
           ),
-          
           const SizedBox(height: 24),
-          
-          // İpuçları kartı
           Card(
             child: Padding(
               padding: const EdgeInsets.all(24),
@@ -304,23 +251,11 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
                     children: [
                       Container(
                         padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.amber,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(
-                          Icons.lightbulb,
-                          color: Colors.white,
-                          size: 20,
-                        ),
+                        decoration: BoxDecoration(color: Colors.amber, borderRadius: BorderRadius.circular(8)),
+                        child: const Icon(Icons.lightbulb, color: Colors.white, size: 20),
                       ),
                       const SizedBox(width: 12),
-                      Text(
-                        'Net Hesaplama İpuçları',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontSize: 18,
-                        ),
-                      ),
+                      Text('İpuçları', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontSize: 18)),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -338,34 +273,48 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
     );
   }
 
-  Widget _buildInputField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    required Color color,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
+  Widget _buildInputField({required TextEditingController controller, required String label, required IconData icon, required Color color}) {
+    return SizedBox(
+      height: 70,
       child: TextField(
         controller: controller,
         keyboardType: TextInputType.number,
         textAlign: TextAlign.center,
-        style: TextStyle(
-          color: color,
-          fontWeight: FontWeight.bold,
-          fontSize: 18,
-        ),
+        style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: color),
-          prefixIcon: Icon(icon, color: color),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.all(16),
+          labelStyle: TextStyle(color: color, fontSize: 12),
+          prefixIcon: Icon(icon, color: color, size: 18),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+          fillColor: color.withOpacity(0.1),
+          contentPadding: const EdgeInsets.symmetric(vertical: 12),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTip(String tip) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 6),
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor,
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: Text(tip, style: Theme.of(context).textTheme.bodyMedium)),
+        ],
       ),
     );
   }
@@ -377,7 +326,7 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
         children: [
           _buildExamTypeSelector(),
           const SizedBox(height: 20),
-          _buildResultCard(),
+          _buildDetailedResultCard(),
           const SizedBox(height: 20),
           _buildSubjectInputs(),
           const SizedBox(height: 20),
@@ -398,7 +347,7 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
               children: [
                 Icon(
                   Icons.quiz,
-                  color: AppTheme.primaryPurple,
+                  color: Theme.of(context).primaryColor,
                   size: 24,
                 ),
                 const SizedBox(width: 8),
@@ -445,8 +394,8 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 16),
           decoration: BoxDecoration(
-            gradient: isSelected ? AppTheme.primaryGradient : null,
-            color: isSelected ? null : Colors.grey[200],
+            gradient: isSelected ? AppThemes.getGradient(StorageService.getTheme()) : null,
+            color: isSelected ? null : Theme.of(context).colorScheme.surfaceVariant,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected ? Colors.transparent : Colors.grey[300]!,
@@ -456,7 +405,7 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
             text,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: isSelected ? Colors.white : Colors.grey[600],
+              color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
               fontSize: 16,
             ),
@@ -466,15 +415,22 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
     );
   }
 
-  Widget _buildResultCard() {
+  Widget _buildDetailedResultCard() {
     return Card(
       elevation: 8,
-      shadowColor: AppTheme.secondaryPurple.withOpacity(0.3),
+      shadowColor: Theme.of(context).colorScheme.secondary.withOpacity(0.3),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          gradient: AppTheme.secondaryGradient,
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).colorScheme.secondary,
+              Theme.of(context).primaryColor,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -485,29 +441,14 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
                 color: Colors.white.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(50),
               ),
-              child: const Icon(
-                Icons.assignment_turned_in,
-                color: Colors.white,
-                size: 32,
-              ),
+              child: const Icon(Icons.assignment_turned_in, color: Colors.white, size: 32),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Toplam Net',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            const Text('Toplam Net', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             Text(
               _totalNet.toStringAsFixed(2),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 42,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(color: Colors.white, fontSize: 42, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Container(
@@ -517,12 +458,8 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                '${_selectedExamType} - Toplam $_totalQuestions soru',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
+                '$_selectedExamType - Toplam $_totalQuestions soru',
+                style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500),
               ),
             ),
           ],
@@ -532,18 +469,17 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
   }
 
   Widget _buildSubjectInputs() {
+    final questionCounts = _getQuestionCounts();
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4),
-          child: Text(
-            'Ders Bazlı Giriş',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
+          child: Text('Ders Bazlı Giriş', style: Theme.of(context).textTheme.headlineSmall),
         ),
         const SizedBox(height: 16),
-        ..._questionCounts.entries.map((entry) {
+        ...questionCounts.entries.map((entry) {
           final subject = entry.key;
           final totalQuestions = entry.value;
           
@@ -559,35 +495,28 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryPurple.withOpacity(0.1),
+                          color: Theme.of(context).primaryColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Icon(
-                          _getSubjectIcon(subject),
-                          color: AppTheme.primaryPurple,
-                          size: 20,
-                        ),
+                        child: Icon(_getSubjectIcon(subject), color: Theme.of(context).primaryColor, size: 20),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           subject,
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.grey[200],
+                          color: Theme.of(context).colorScheme.surfaceVariant,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           '$totalQuestions soru',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
                         ),
                       ),
                     ],
@@ -595,42 +524,18 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      Expanded(
-                        child: _buildSubjectInputField(
-                          subject: subject,
-                          type: 'correct',
-                          label: 'Doğru',
-                          icon: Icons.check_circle,
-                          color: Colors.green,
-                        ),
-                      ),
+                      Expanded(child: _buildSubjectInputField(subject: subject, type: 'correct', label: 'Doğru', icon: Icons.check_circle, color: Colors.green)),
                       const SizedBox(width: 8),
-                      Expanded(
-                        child: _buildSubjectInputField(
-                          subject: subject,
-                          type: 'wrong',
-                          label: 'Yanlış',
-                          icon: Icons.cancel,
-                          color: Colors.red,
-                        ),
-                      ),
+                      Expanded(child: _buildSubjectInputField(subject: subject, type: 'wrong', label: 'Yanlış', icon: Icons.cancel, color: Colors.red)),
                       const SizedBox(width: 8),
-                      Expanded(
-                        child: _buildSubjectInputField(
-                          subject: subject,
-                          type: 'empty',
-                          label: 'Boş',
-                          icon: Icons.radio_button_unchecked,
-                          color: Colors.orange,
-                        ),
-                      ),
+                      Expanded(child: _buildSubjectInputField(subject: subject, type: 'empty', label: 'Boş', icon: Icons.radio_button_unchecked, color: Colors.orange)),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryPurple.withOpacity(0.1),
+                      color: Theme.of(context).primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -639,15 +544,13 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
                         Text(
                           'Net: ${(_subjectInputs[subject]!['correct']! - (_subjectInputs[subject]!['wrong']! / 4)).toStringAsFixed(2)}',
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.primaryPurple,
-                          ),
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(context).primaryColor,
+                              ),
                         ),
                         Text(
                           'Toplam: ${_subjectInputs[subject]!['correct']! + _subjectInputs[subject]!['wrong']! + _subjectInputs[subject]!['empty']!}/$totalQuestions',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                         ),
                       ],
                     ),
@@ -661,28 +564,16 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
     );
   }
 
-  Widget _buildSubjectInputField({
-    required String subject,
-    required String type,
-    required String label,
-    required IconData icon,
-    required Color color,
-  }) {
+  Widget _buildSubjectInputField({required String subject, required String type, required String label, required IconData icon, required Color color}) {
     return TextField(
       keyboardType: TextInputType.number,
       textAlign: TextAlign.center,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(color: color, fontSize: 12),
-        prefixIcon: Icon(icon, color: color, size: 16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: color.withOpacity(0.3)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: color),
-        ),
+        prefixIcon: Icon(icon, color: color, size: 14),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: color.withOpacity(0.3))),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: color)),
         contentPadding: const EdgeInsets.symmetric(vertical: 8),
         isDense: true,
       ),
@@ -699,22 +590,12 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
         Expanded(
           child: ElevatedButton.icon(
             onPressed: () {
-              setState(() {
-                for (String subject in _subjectInputs.keys) {
-                  _subjectInputs[subject] = {
-                    'correct': 0,
-                    'wrong': 0,
-                    'empty': 0,
-                  };
-                }
-              });
-              _calculateTotals();
-              
+              _initializeInputs(); // Bu metod hem state'i hem de controllerları sıfırlar
+              _quickCorrectController.clear();
+              _quickWrongController.clear();
+              _quickEmptyController.clear();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Tüm değerler temizlendi'),
-                  backgroundColor: Colors.orange,
-                ),
+                const SnackBar(content: Text('Tüm değerler temizlendi'), backgroundColor: Colors.orange),
               );
             },
             icon: const Icon(Icons.clear_all),
@@ -723,9 +604,7 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
               backgroundColor: Colors.orange,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
         ),
@@ -733,90 +612,33 @@ class _NetCalculatorScreenState extends State<NetCalculatorScreen> with TickerPr
         Expanded(
           child: ElevatedButton.icon(
             onPressed: () {
-              // Sonuçları paylaş
-              final text = 'YKS Net Hesaplayıcı Sonucu:\n'
-                  '$_selectedExamType - Toplam Net: ${_totalNet.toStringAsFixed(2)}\n'
-                  'Toplam Soru: $_totalQuestions';
-              
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Sonuç kopyalandı: ${_totalNet.toStringAsFixed(2)} net'),
-                  backgroundColor: Colors.green,
-                ),
+                SnackBar(content: Text('Sonuç kopyalandı: ${_totalNet.toStringAsFixed(2)} net'), backgroundColor: Colors.green),
               );
             },
             icon: const Icon(Icons.share),
             label: const Text('Paylaş'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryPurple,
+              backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
         ),
       ],
     );
   }
-
-  Widget _buildTip(String tip) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            margin: const EdgeInsets.only(top: 6),
-            width: 6,
-            height: 6,
-            decoration: BoxDecoration(
-              color: AppTheme.primaryPurple,
-              borderRadius: BorderRadius.circular(3),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              tip,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
+  
   IconData _getSubjectIcon(String subject) {
     switch (subject) {
-      case 'Matematik':
-        return Icons.calculate;
-      case 'Türkçe':
-      case 'Türk Dili ve Edebiyatı':
-        return Icons.menu_book;
-      case 'Geometri':
-        return Icons.square_foot;
-      case 'Fizik':
-        return Icons.science;
-      case 'Kimya':
-        return Icons.biotech;
-      case 'Biyoloji':
-        return Icons.eco;
-      case 'Tarih':
-      case 'Tarih-1':
-      case 'Tarih-2':
-        return Icons.history_edu;
-      case 'Coğrafya':
-      case 'Coğrafya-1':
-      case 'Coğrafya-2':
-        return Icons.public;
-      case 'Felsefe':
-        return Icons.psychology;
-      case 'Din Kültürü':
-        return Icons.mosque;
-      default:
-        return Icons.subject;
+      case 'Türkçe': return Icons.menu_book;
+      case 'Sosyal Bilimler': return Icons.public;
+      case 'Matematik': return Icons.calculate;
+      case 'Fen Bilimleri': return Icons.science;
+      case 'Türk Dili ve Edebiyatı-Sosyal Bilimler-1': return Icons.library_books;
+      case 'Sosyal Bilimler-2': return Icons.history_edu;
+      default: return Icons.subject;
     }
   }
 }

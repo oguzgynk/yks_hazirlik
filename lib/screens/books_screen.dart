@@ -1,55 +1,11 @@
+// lib/screens/books_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import '../utils/constants.dart';
 import '../utils/theme.dart';
 import '../services/storage_service.dart';
 import '../models/data_models.dart';
-
-IconData _getSubjectIcon(String subject) {
-  switch (subject.toLowerCase()) {
-    case 'matematik':
-      return Icons.calculate;
-    case 'türkçe':
-    case 'türk dili ve edebiyatı':
-      return Icons.menu_book;
-    case 'geometri':
-      return Icons.square_foot;
-    case 'fizik':
-      return Icons.science;
-    case 'kimya':
-      return Icons.biotech;
-    case 'biyoloji':
-      return Icons.eco;
-    case 'tarih':
-    case 'tarih-1':
-    case 'tarih-2':
-      return Icons.history_edu;
-    case 'coğrafya':
-    case 'coğrafya-1':
-    case 'coğrafya-2':
-      return Icons.public;
-    case 'felsefe':
-      return Icons.psychology;
-    case 'din kültürü':
-      return Icons.mosque;
-    default:
-      return Icons.book;
-  }
-}
-
-LinearGradient _getBookGradient(String examType) {
-  return examType == 'TYT' 
-      ? LinearGradient(
-          colors: [Colors.blue[600]!, Colors.blue[400]!],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        )
-      : LinearGradient(
-          colors: [Colors.purple[600]!, Colors.purple[400]!],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        );
-}
 
 class BooksScreen extends StatefulWidget {
   const BooksScreen({super.key});
@@ -101,6 +57,33 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
     });
   }
 
+  IconData _getSubjectIcon(String subject) {
+    switch (subject.toLowerCase()) {
+      case 'matematik': return Icons.calculate;
+      case 'türkçe':
+      case 'türk dili ve edebiyatı': return Icons.menu_book;
+      case 'geometri': return Icons.square_foot;
+      case 'fizik': return Icons.bolt;
+      case 'kimya': return Icons.science;
+      case 'biyoloji': return Icons.biotech;
+      case 'tarih':
+      case 'tarih-1':
+      case 'tarih-2': return Icons.history_edu;
+      case 'coğrafya':
+      case 'coğrafya-1':
+      case 'coğrafya-2': return Icons.public;
+      case 'felsefe': return Icons.psychology;
+      case 'din kültürü': return Icons.mosque;
+      default: return Icons.book;
+    }
+  }
+
+  LinearGradient _getBookGradient(String examType) {
+    return examType == 'TYT' 
+        ? LinearGradient(colors: [Colors.blue[600]!, Colors.blue[400]!], begin: Alignment.topLeft, end: Alignment.bottomRight)
+        : LinearGradient(colors: [Colors.purple[600]!, Colors.purple[400]!], begin: Alignment.topLeft, end: Alignment.bottomRight);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,45 +101,29 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
                 icon: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryPurple.withOpacity(0.1),
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.arrow_back,
-                    color: AppTheme.primaryPurple,
+                    color: Theme.of(context).primaryColor,
                   ),
                 ),
               )
             : null,
-        actions: _selectedBook == null 
+        actions: _selectedBook != null
             ? [
-                IconButton(
-                  onPressed: _showAddBookDialog,
-                  icon: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.primaryGradient,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.add,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ]
-            : [
                 IconButton(
                   onPressed: () => _showEditBookDialog(_selectedBook!),
                   icon: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryBlue.withOpacity(0.1),
+                      color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.edit,
-                      color: AppTheme.primaryBlue,
+                      color: Theme.of(context).colorScheme.secondary,
                     ),
                   ),
                 ),
@@ -168,13 +135,14 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
                       color: Colors.red.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.delete,
                       color: Colors.red,
                     ),
                   ),
                 ),
-              ],
+              ]
+            : null,
       ),
       body: FadeTransition(
         opacity: _fadeAnimation,
@@ -185,8 +153,8 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
       floatingActionButton: _selectedBook == null 
           ? FloatingActionButton.extended(
               onPressed: _showAddBookDialog,
-              backgroundColor: AppTheme.primaryPurple,
-              icon: const Icon(Icons.add, color: Colors.white),
+              backgroundColor: Theme.of(context).primaryColor,
+              icon: Icon(Icons.add, color: Colors.white),
               label: const Text(
                 'Kitap Ekle',
                 style: TextStyle(
@@ -202,50 +170,42 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
   Widget _buildBooksList() {
     if (_books.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(32),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryPurple.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.library_books,
-                size: 80,
-                color: AppTheme.primaryPurple.withOpacity(0.5),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Henüz kitap eklenmemiş',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'İlk kitabınızı eklemek için + butonuna basın',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[500],
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: _showAddBookDialog,
-              icon: const Icon(Icons.add),
-              label: const Text('Kitap Ekle'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryPurple,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.library_books,
+                  size: 80,
+                  color: Theme.of(context).primaryColor.withOpacity(0.5),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 24),
+              Text(
+                'Henüz kitap eklenmemiş',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'İlk kitabınızı eklemek için aşağıdaki "Kitap Ekle" butonuna basın.\n\nKitaplarınızı ekleyerek konularınızı takip edebilir, ilerlemenizi izleyebilirsiniz.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey[500],
+                      height: 1.5,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -257,8 +217,8 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
         final book = _books[index];
         
         return Card(
-         key: ValueKey(book.id),
-         margin: const EdgeInsets.only(bottom: 16),
+          key: ValueKey(book.id),
+          margin: const EdgeInsets.only(bottom: 16),
           elevation: 4,
           child: InkWell(
             onTap: () {
@@ -279,8 +239,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: (book.examType == 'TYT' ? Colors.blue : Colors.purple)
-                              .withOpacity(0.3),
+                          color: (book.examType == 'TYT' ? Colors.blue : Colors.purple).withOpacity(0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -299,18 +258,14 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
                       children: [
                         Text(
                           book.name,
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
                         Text(
                           book.publisher,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                         ),
                         const SizedBox(height: 4),
                         Container(
@@ -335,7 +290,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
                           lineHeight: 6,
                           percent: book.completionPercentage / 100,
                           backgroundColor: Colors.grey[300],
-                          linearGradient: AppTheme.primaryGradient,
+                          linearGradient: AppThemes.getGradient(StorageService.getTheme()),
                           barRadius: const Radius.circular(3),
                         ),
                         const SizedBox(height: 4),
@@ -344,34 +299,19 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
                           children: [
                             Text(
                               '${book.completionPercentage.toInt()}% tamamlandı',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
+                              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                             ),
                             Text(
                               '${book.topics.where((t) => t.isCompleted).length}/${book.topics.length} konu',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: AppTheme.primaryPurple,
+                                color: Theme.of(context).primaryColor,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
                         ),
                       ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryPurple.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.arrow_forward_ios,
-                      color: AppTheme.primaryPurple,
-                      size: 16,
                     ),
                   ),
                 ],
@@ -388,22 +328,18 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
     
     return Column(
       children: [
-        // Kitap bilgileri
         Container(
           margin: const EdgeInsets.all(16),
           child: Card(
             elevation: 8,
-            shadowColor: (book.examType == 'TYT' ? Colors.blue : Colors.purple)
-                .withOpacity(0.3),
+            shadowColor: (book.examType == 'TYT' ? Colors.blue : Colors.purple).withOpacity(0.3),
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    (book.examType == 'TYT' ? Colors.blue : Colors.purple)
-                        .withOpacity(0.1),
-                    (book.examType == 'TYT' ? Colors.blue : Colors.purple)
-                        .withOpacity(0.05),
+                    (book.examType == 'TYT' ? Colors.blue : Colors.purple).withOpacity(0.1),
+                    (book.examType == 'TYT' ? Colors.blue : Colors.purple).withOpacity(0.05),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -422,35 +358,22 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: (book.examType == 'TYT' ? Colors.blue : Colors.purple)
-                                  .withOpacity(0.4),
+                              color: (book.examType == 'TYT' ? Colors.blue : Colors.purple).withOpacity(0.4),
                               blurRadius: 12,
                               offset: const Offset(0, 6),
                             ),
                           ],
                         ),
-                        child: Icon(
-                          _getSubjectIcon(book.subject),
-                          color: Colors.white,
-                          size: 32,
-                        ),
+                        child: Icon(_getSubjectIcon(book.subject), color: Colors.white, size: 32),
                       ),
                       const SizedBox(width: 20),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              book.name,
-                              style: Theme.of(context).textTheme.headlineSmall,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                            Text(book.name, style: Theme.of(context).textTheme.headlineSmall, maxLines: 2, overflow: TextOverflow.ellipsis),
                             const SizedBox(height: 4),
-                            Text(
-                              book.publisher,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
+                            Text(book.publisher, style: Theme.of(context).textTheme.bodyMedium),
                             const SizedBox(height: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -460,11 +383,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
                               ),
                               child: Text(
                                 '${book.examType} - ${book.subject}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
                               ),
                             ),
                           ],
@@ -477,7 +396,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
                     lineHeight: 10,
                     percent: book.completionPercentage / 100,
                     backgroundColor: Colors.grey[300],
-                    linearGradient: AppTheme.primaryGradient,
+                    linearGradient: AppThemes.getGradient(StorageService.getTheme()),
                     barRadius: const Radius.circular(5),
                   ),
                   const SizedBox(height: 12),
@@ -491,16 +410,12 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          gradient: AppTheme.primaryGradient,
+                          gradient: AppThemes.getGradient(StorageService.getTheme()),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           '${book.completionPercentage.toInt()}%',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                         ),
                       ),
                     ],
@@ -510,15 +425,12 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
             ),
           ),
         ),
-        
-        // Konular listesi
         Expanded(
           child: ListView.builder(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             itemCount: book.topics.length,
             itemBuilder: (context, index) {
               final topic = book.topics[index];
-              
               return Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 elevation: 1,
@@ -526,10 +438,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
                   onTap: () => _toggleBookTopic(index),
                   borderRadius: BorderRadius.circular(16),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     child: Row(
                       children: [
                         AnimatedContainer(
@@ -538,20 +447,12 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
                           height: 40,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            gradient: topic.isCompleted 
-                                ? AppTheme.primaryGradient
-                                : null,
-                            color: topic.isCompleted 
-                                ? null
-                                : Colors.grey[300],
+                            gradient: topic.isCompleted ? AppThemes.getGradient(StorageService.getTheme()) : null,
+                            color: topic.isCompleted ? null : Colors.grey[300],
                           ),
                           child: Icon(
-                            topic.isCompleted 
-                                ? Icons.check 
-                                : Icons.radio_button_unchecked,
-                            color: topic.isCompleted 
-                                ? Colors.white 
-                                : Colors.grey[600],
+                            topic.isCompleted ? Icons.check : Icons.radio_button_unchecked,
+                            color: topic.isCompleted ? Colors.white : Colors.grey[600],
                             size: 20,
                           ),
                         ),
@@ -564,21 +465,14 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
                                 topic.name,
                                 style: TextStyle(
                                   fontWeight: FontWeight.w500,
-                                  decoration: topic.isCompleted 
-                                      ? TextDecoration.lineThrough 
-                                      : null,
-                                  color: topic.isCompleted 
-                                      ? Colors.grey[600] 
-                                      : null,
+                                  decoration: topic.isCompleted ? TextDecoration.lineThrough : null,
+                                  color: topic.isCompleted ? Colors.grey[600] : null,
                                 ),
                               ),
                               if (topic.questionsSolved > 0) 
                                 Text(
                                   '${topic.questionsSolved} soru çözüldü',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                  ),
+                                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                                 ),
                             ],
                           ),
@@ -592,11 +486,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
                             ),
                             child: const Text(
                               'Tamamlandı',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: Colors.green,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: TextStyle(fontSize: 10, color: Colors.green, fontWeight: FontWeight.w600),
                             ),
                           ),
                       ],
@@ -626,34 +516,14 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(
-                  controller: nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Kitap Adı',
-                    prefixIcon: Icon(Icons.book),
-                    border: OutlineInputBorder(),
-                  ),
-                ),
+                TextField(controller: nameController, decoration: InputDecoration(labelText: 'Kitap Adı', prefixIcon: Icon(Icons.book), border: OutlineInputBorder())),
                 const SizedBox(height: 16),
-                TextField(
-                  controller: publisherController,
-                  decoration: const InputDecoration(
-                    labelText: 'Yayınevi',
-                    prefixIcon: Icon(Icons.business),
-                    border: OutlineInputBorder(),
-                  ),
-                ),
+                TextField(controller: publisherController, decoration: InputDecoration(labelText: 'Yayınevi', prefixIcon: Icon(Icons.business), border: OutlineInputBorder())),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: selectedExamType,
-                  decoration: const InputDecoration(
-                    labelText: 'Sınav Türü',
-                    prefixIcon: Icon(Icons.quiz),
-                    border: OutlineInputBorder(),
-                  ),
-                  items: ['TYT', 'AYT'].map((type) {
-                    return DropdownMenuItem(value: type, child: Text(type));
-                  }).toList(),
+                  decoration: InputDecoration(labelText: 'Sınav Türü', prefixIcon: Icon(Icons.quiz), border: OutlineInputBorder()),
+                  items: ['TYT', 'AYT'].map((type) => DropdownMenuItem(value: type, child: Text(type))).toList(),
                   onChanged: (value) {
                     setDialogState(() {
                       selectedExamType = value!;
@@ -664,14 +534,8 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: selectedSubject,
-                  decoration: const InputDecoration(
-                    labelText: 'Ders',
-                    prefixIcon: Icon(Icons.school),
-                    border: OutlineInputBorder(),
-                  ),
-                  items: _getSubjectsForExam(selectedExamType).map((subject) {
-                    return DropdownMenuItem(value: subject, child: Text(subject));
-                  }).toList(),
+                  decoration: InputDecoration(labelText: 'Ders', prefixIcon: Icon(Icons.school), border: OutlineInputBorder()),
+                  items: _getSubjectsForExam(selectedExamType).map((subject) => DropdownMenuItem(value: subject, child: Text(subject))).toList(),
                   onChanged: (value) {
                     setDialogState(() {
                       selectedSubject = value;
@@ -682,26 +546,16 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('İptal'),
-            ),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('İptal')),
             ElevatedButton(
               onPressed: () {
-                if (nameController.text.isNotEmpty &&
-                    publisherController.text.isNotEmpty &&
-                    selectedSubject != null) {
-                  _addBook(
-                    nameController.text,
-                    publisherController.text,
-                    selectedExamType,
-                    selectedSubject!,
-                  );
+                if (nameController.text.isNotEmpty && publisherController.text.isNotEmpty && selectedSubject != null) {
+                  _addBook(nameController.text, publisherController.text, selectedExamType, selectedSubject!);
                   Navigator.pop(context);
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryPurple,
+                backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: Colors.white,
               ),
               child: const Text('Ekle'),
@@ -721,7 +575,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.add, color: Colors.green),
+              leading: Icon(Icons.add, color: Colors.green),
               title: const Text('Konu Ekle'),
               onTap: () {
                 Navigator.pop(context);
@@ -729,7 +583,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
               },
             ),
             ListTile(
-              leading: const Icon(Icons.remove, color: Colors.red),
+              leading: Icon(Icons.remove, color: Colors.red),
               title: const Text('Konu Çıkar'),
               onTap: () {
                 Navigator.pop(context);
@@ -739,10 +593,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Kapat'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Kapat')),
         ],
       ),
     );
@@ -755,19 +606,9 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Konu Ekle'),
-        content: TextField(
-          controller: topicController,
-          decoration: const InputDecoration(
-            labelText: 'Konu Adı',
-            prefixIcon: Icon(Icons.topic),
-            border: OutlineInputBorder(),
-          ),
-        ),
+        content: TextField(controller: topicController, decoration: InputDecoration(labelText: 'Konu Adı', prefixIcon: Icon(Icons.topic), border: OutlineInputBorder())),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('İptal')),
           ElevatedButton(
             onPressed: () {
               if (topicController.text.isNotEmpty) {
@@ -776,7 +617,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryPurple,
+              backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
             ),
             child: const Text('Ekle'),
@@ -801,7 +642,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
               return ListTile(
                 title: Text(topic.name),
                 trailing: IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
+                  icon: Icon(Icons.delete, color: Colors.red),
                   onPressed: () {
                     _removeTopicFromBook(book, index);
                     Navigator.pop(context);
@@ -812,10 +653,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Kapat'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Kapat')),
         ],
       ),
     );
@@ -828,10 +666,26 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
   }
 
   void _addBook(String name, String publisher, String examType, String subject) {
-    final topicsMap = examType == 'TYT' 
-        ? AppConstants.tytTopics 
-        : AppConstants.aytTopics;
-    
+    if (!StorageService.getPremiumStatus() && _books.length >= 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.warning, color: Colors.white),
+              SizedBox(width: 12),
+              Expanded(child: Text('En fazla 10 kitap ekleyebilirsiniz. Premium\'a geçerek sınırsız kitap ekleyebilirsiniz.')),
+            ],
+          ),
+          backgroundColor: Colors.orange,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+      return;
+    }
+
+    final topicsMap = examType == 'TYT' ? AppConstants.tytTopics : AppConstants.aytTopics;
     final topicNames = topicsMap[subject] ?? [];
     final topics = topicNames.map((name) => Topic(name: name)).toList();
     
@@ -849,7 +703,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
+        content: Row(
           children: [
             Icon(Icons.check_circle, color: Colors.white),
             SizedBox(width: 12),
@@ -858,9 +712,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
         ),
         backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -875,7 +727,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
+        content: Row(
           children: [
             Icon(Icons.check_circle, color: Colors.white),
             SizedBox(width: 12),
@@ -884,9 +736,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
         ),
         backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -901,7 +751,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
+        content: Row(
           children: [
             Icon(Icons.check_circle, color: Colors.white),
             SizedBox(width: 12),
@@ -910,9 +760,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
         ),
         backgroundColor: Colors.orange,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -935,25 +783,15 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
       SnackBar(
         content: Row(
           children: [
-            Icon(
-              book.topics[index].isCompleted ? Icons.check_circle : Icons.undo,
-              color: Colors.white,
-            ),
+            Icon(book.topics[index].isCompleted ? Icons.check_circle : Icons.undo, color: Colors.white),
             const SizedBox(width: 12),
-            Text(
-              message,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
+            Text(message, style: TextStyle(fontWeight: FontWeight.w600)),
           ],
         ),
-        backgroundColor: book.topics[index].isCompleted 
-            ? Colors.green 
-            : Colors.orange,
+        backgroundColor: book.topics[index].isCompleted ? Colors.green : Colors.orange,
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -980,7 +818,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
               
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Row(
+                  content: Row(
                     children: [
                       Icon(Icons.check_circle, color: Colors.white),
                       SizedBox(width: 12),
@@ -989,9 +827,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
                   ),
                   backgroundColor: Colors.red,
                   behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
               );
             },

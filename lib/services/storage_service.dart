@@ -1,3 +1,5 @@
+// lib/services/storage_service.dart
+
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/data_models.dart';
@@ -8,9 +10,6 @@ class StorageService {
   static Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
   }
-
-  // Getter for _prefs
-  static SharedPreferences get prefs => _prefs;
 
   // Temel get/set metodları
   static Future<bool> setBool(String key, bool value) async {
@@ -56,6 +55,15 @@ class StorageService {
   static Future<bool> remove(String key) async {
     return await _prefs.remove(key);
   }
+  
+  // YENİ VE GÜNCELLENMİŞ BÖLÜM: TEMA YÖNETİMİ
+  static Future<void> saveTheme(String themeName) async {
+    await _prefs.setString('theme_name', themeName);
+  }
+
+  static String getTheme() {
+    return _prefs.getString('theme_name') ?? 'light';
+  }
 
   // Çalışma oturumları
   static Future<void> saveStudySession(StudySession session) async {
@@ -72,11 +80,7 @@ class StorageService {
   // Kitaplar
   static Future<void> saveBook(Book book) async {
     List<String> books = getStringList('books') ?? [];
-    // Eğer kitap zaten varsa güncelle
-    books.removeWhere((bookJson) {
-      Book existingBook = Book.fromJson(bookJson);
-      return existingBook.id == book.id;
-    });
+    books.removeWhere((bookJson) => Book.fromJson(bookJson).id == book.id);
     books.add(book.toJson());
     await setStringList('books', books);
   }
@@ -88,10 +92,7 @@ class StorageService {
 
   static Future<void> removeBook(String bookId) async {
     List<String> books = getStringList('books') ?? [];
-    books.removeWhere((bookJson) {
-      Book book = Book.fromJson(bookJson);
-      return book.id == bookId;
-    });
+    books.removeWhere((bookJson) => Book.fromJson(bookJson).id == bookId);
     await setStringList('books', books);
   }
 
@@ -131,7 +132,7 @@ class StorageService {
     return PomodoroSettings.fromMap(json.decode(settingsJson));
   }
 
-  // Konu ilerlemeleri (TYT/AYT)
+  // Konu ilerlemeleri
   static Future<void> saveTopicProgress(String examType, String subject, List<Topic> topics) async {
     String key = '${examType.toLowerCase()}_${subject.toLowerCase()}_topics';
     List<String> topicsJson = topics.map((topic) => json.encode(topic.toMap())).toList();
@@ -168,11 +169,7 @@ class StorageService {
   // Ajenda aktiviteleri
   static Future<void> saveAgendaActivity(AgendaActivity activity) async {
     List<String> activities = getStringList('agenda_activities') ?? [];
-    // Eğer aktivite zaten varsa güncelle
-    activities.removeWhere((activityJson) {
-      AgendaActivity existingActivity = AgendaActivity.fromJson(activityJson);
-      return existingActivity.id == activity.id;
-    });
+    activities.removeWhere((actJson) => AgendaActivity.fromJson(actJson).id == activity.id);
     activities.add(activity.toJson());
     await setStringList('agenda_activities', activities);
   }
@@ -184,10 +181,7 @@ class StorageService {
 
   static Future<void> removeAgendaActivity(String activityId) async {
     List<String> activities = getStringList('agenda_activities') ?? [];
-    activities.removeWhere((activityJson) {
-      AgendaActivity activity = AgendaActivity.fromJson(activityJson);
-      return activity.id == activityId;
-    });
+    activities.removeWhere((actJson) => AgendaActivity.fromJson(actJson).id == activityId);
     await setStringList('agenda_activities', activities);
   }
 
@@ -195,11 +189,7 @@ class StorageService {
     List<AgendaActivity> allActivities = getAgendaActivities();
     DateTime startOfDay = DateTime(date.year, date.month, date.day);
     DateTime endOfDay = startOfDay.add(const Duration(days: 1));
-    
-    return allActivities.where((activity) {
-      return activity.dateTime.isAfter(startOfDay.subtract(const Duration(seconds: 1))) &&
-             activity.dateTime.isBefore(endOfDay);
-    }).toList();
+    return allActivities.where((activity) => activity.dateTime.isAfter(startOfDay.subtract(const Duration(seconds: 1))) && activity.dateTime.isBefore(endOfDay)).toList();
   }
 
   static List<AgendaActivity> getAgendaActivitiesForWeek(DateTime date) {
@@ -207,11 +197,7 @@ class StorageService {
     DateTime startOfWeek = date.subtract(Duration(days: date.weekday - 1));
     startOfWeek = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
     DateTime endOfWeek = startOfWeek.add(const Duration(days: 7));
-    
-    return allActivities.where((activity) {
-      return activity.dateTime.isAfter(startOfWeek.subtract(const Duration(seconds: 1))) &&
-             activity.dateTime.isBefore(endOfWeek);
-    }).toList();
+    return allActivities.where((activity) => activity.dateTime.isAfter(startOfWeek.subtract(const Duration(seconds: 1))) && activity.dateTime.isBefore(endOfWeek)).toList();
   }
 
   // Bildirim ayarları
@@ -226,25 +212,7 @@ class StorageService {
   // Çalışma verileri için yardımcı metodlar
   static List<StudySession> getStudySessionsByDateRange(DateTime start, DateTime end) {
     List<StudySession> allSessions = getStudySessions();
-    return allSessions.where((session) {
-      return session.date.isAfter(start.subtract(const Duration(days: 1))) &&
-             session.date.isBefore(end.add(const Duration(days: 1)));
-    }).toList();
-  }
-
-  static Map<String, double> getSubjectStats() {
-    List<StudySession> sessions = getStudySessions();
-    Map<String, double> stats = {};
-    
-    for (var session in sessions) {
-      if (stats.containsKey(session.subject)) {
-        stats[session.subject] = stats[session.subject]! + session.netScore;
-      } else {
-        stats[session.subject] = session.netScore;
-      }
-    }
-    
-    return stats;
+    return allSessions.where((session) => session.date.isAfter(start.subtract(const Duration(days: 1))) && session.date.isBefore(end.add(const Duration(days: 1)))).toList();
   }
 
   static int getTotalStudyMinutes() {
@@ -252,48 +220,17 @@ class StorageService {
     return sessions.fold(0, (total, session) => total + session.duration);
   }
 
-  static int getTotalQuestionsSolved() {
-    List<StudySession> sessions = getStudySessions();
-    return sessions.fold(0, (total, session) => 
-      total + session.correctAnswers + session.wrongAnswers + session.emptyAnswers);
-  }
-
-  // Bugünkü veriler
-  static List<StudySession> getTodaySessions() {
+  static int getTodayStudyMinutes() {
     DateTime now = DateTime.now();
     DateTime startOfDay = DateTime(now.year, now.month, now.day);
     DateTime endOfDay = startOfDay.add(const Duration(days: 1));
-    
-    return getStudySessionsByDateRange(startOfDay, endOfDay);
-  }
-
-  static int getTodayStudyMinutes() {
-    List<StudySession> todaySessions = getTodaySessions();
-    return todaySessions.fold(0, (total, session) => total + session.duration);
+    return getStudySessionsByDateRange(startOfDay, endOfDay).fold(0, (total, session) => total + session.duration);
   }
 
   static int getTodayQuestionsSolved() {
-    List<StudySession> todaySessions = getTodaySessions();
-    return todaySessions.fold(0, (total, session) => 
-      total + session.correctAnswers + session.wrongAnswers + session.emptyAnswers);
-  }
-
-  // Haftalık veriler
-  static List<StudySession> getWeeklySessions() {
     DateTime now = DateTime.now();
-    DateTime startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-    startOfWeek = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
-    DateTime endOfWeek = startOfWeek.add(const Duration(days: 7));
-    
-    return getStudySessionsByDateRange(startOfWeek, endOfWeek);
-  }
-
-  // Aylık veriler
-  static List<StudySession> getMonthlySessions() {
-    DateTime now = DateTime.now();
-    DateTime startOfMonth = DateTime(now.year, now.month, 1);
-    DateTime endOfMonth = DateTime(now.year, now.month + 1, 1);
-    
-    return getStudySessionsByDateRange(startOfMonth, endOfMonth);
+    DateTime startOfDay = DateTime(now.year, now.month, now.day);
+    DateTime endOfDay = startOfDay.add(const Duration(days: 1));
+    return getStudySessionsByDateRange(startOfDay, endOfDay).fold(0, (total, session) => total + session.correctAnswers + session.wrongAnswers + session.emptyAnswers);
   }
 }

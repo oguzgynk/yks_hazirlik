@@ -1,3 +1,5 @@
+// lib/screens/home_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
@@ -13,14 +15,13 @@ import 'study_time_entry_screen.dart';
 import 'net_calculator_screen.dart';
 import 'pomodoro_screen.dart';
 
-
 class HomeScreen extends StatefulWidget {
-  final bool isDarkMode;
-  final VoidCallback onThemeChanged;
+  final String currentTheme;
+  final ValueChanged<String> onThemeChanged;
 
   const HomeScreen({
     super.key,
-    required this.isDarkMode,
+    required this.currentTheme,
     required this.onThemeChanged,
   });
 
@@ -73,7 +74,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   MotivationQuote _getTodaysQuote() {
-    // Günlük sabit bir söz için tarih tabanlı rastgele sayı
     final today = DateTime.now();
     final seed = today.year * 1000 + today.month * 100 + today.day;
     final random = Random(seed);
@@ -82,6 +82,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   int _getDaysUntilYKS() {
+    if (_yksDate == null) return 0;
     final now = DateTime.now();
     final difference = _yksDate!.difference(now);
     return difference.inDays;
@@ -128,22 +129,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Merhaba! 👋',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            Text(
-              'Başarıya hazır mısın?',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Merhaba! 👋', style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
+              Text('Başarıya hazır mısın?', style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.7))),
+            ],
+          ),
         ),
         IconButton(
           onPressed: () {
@@ -151,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               context,
               MaterialPageRoute(
                 builder: (context) => SettingsScreen(
-                  isDarkMode: widget.isDarkMode,
+                  currentTheme: widget.currentTheme,
                   onThemeChanged: widget.onThemeChanged,
                 ),
               ),
@@ -160,14 +153,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           icon: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              gradient: AppTheme.primaryGradient,
+              gradient: AppThemes.getGradient(widget.currentTheme),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
-              Icons.settings,
-              color: Colors.white,
-              size: 24,
-            ),
+            child: Icon(Icons.settings, color: Colors.white, size: 24),
           ),
         ),
       ],
@@ -189,11 +178,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               width: double.infinity,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: AppTheme.primaryGradient,
+                gradient: AppThemes.getGradient(widget.currentTheme),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.primaryPurple.withOpacity(0.3),
+                    color: Theme.of(context).primaryColor.withOpacity(0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -207,33 +196,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     builder: (context, iconValue, child) {
                       return Transform.scale(
                         scale: iconValue,
-                        child: const Icon(
-                          Icons.calendar_today,
-                          color: Colors.white,
-                          size: 32,
-                        ),
+                        child: Icon(Icons.calendar_today, color: Colors.white, size: 32),
                       );
                     },
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'YKS\'ye Kalan Süre',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  const Text('YKS\'ye Kalan Süre', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w600)),
                   const SizedBox(height: 8),
                   AnimatedTextKit(
                     animatedTexts: [
                       TypewriterAnimatedText(
                         '$daysLeft GÜN',
-                        textStyle: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        textStyle: TextStyle(color: Colors.white, fontSize: 36, fontWeight: FontWeight.bold),
                         speed: const Duration(milliseconds: 100),
                       ),
                     ],
@@ -246,10 +220,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       : daysLeft == 0 
                         ? 'Bugün büyük gün! 🎯'
                         : 'YKS geçti, haydi yeni hedeflere! 🚀',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],
               ),
@@ -270,24 +241,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: AppTheme.primaryPurple.withOpacity(0.2),
+          // DÜZELTİLDİ: AppTheme -> Theme.of(context)
+          color: Theme.of(context).primaryColor.withOpacity(0.2),
           width: 1,
         ),
       ),
       child: Column(
         children: [
-          const Icon(
+          Icon(
             Icons.format_quote,
-            color: AppTheme.primaryPurple,
+            // DÜZELTİLDİ: AppTheme -> Theme.of(context)
+            color: Theme.of(context).primaryColor,
             size: 24,
           ),
           const SizedBox(height: 8),
           Text(
             _todaysQuote!.quote,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontStyle: FontStyle.italic,
-              height: 1.4,
-            ),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic, height: 1.4),
             textAlign: TextAlign.center,
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
@@ -296,9 +266,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Text(
             '- ${_todaysQuote!.author}',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppTheme.primaryPurple,
-              fontWeight: FontWeight.w600,
-            ),
+                  // DÜZELTİLDİ: AppTheme -> Theme.of(context)
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.w600,
+                ),
           ),
         ],
       ),
@@ -313,11 +284,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Bugünkü Hedeflerim 🎯',
-                  style: Theme.of(context).textTheme.headlineSmall,
+                Expanded(
+                  child: Text(
+                    'Bugünkü Hedeflerim 🎯',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                    overflow: TextOverflow.visible,
+                    softWrap: true,
+                  ),
                 ),
                 TextButton(
                   onPressed: _showGoalDialog,
@@ -348,16 +322,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               Center(
                 child: Column(
                   children: [
-                    Icon(
-                      Icons.track_changes,
-                      size: 48,
-                      color: Colors.grey[400],
-                    ),
+                    Icon(Icons.track_changes, size: 48, color: Colors.grey[400]),
                     const SizedBox(height: 8),
-                    Text(
-                      'Henüz günlük hedef belirlenmemiş',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
+                    Text('Henüz günlük hedef belirlenmemiş', style: Theme.of(context).textTheme.bodyMedium),
                     const SizedBox(height: 8),
                     ElevatedButton(
                       onPressed: _showGoalDialog,
@@ -373,16 +340,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildGoalProgress(
-    String title,
-    String subtitle,
-    double current,
-    double target,
-    IconData icon,
-    Color color,
-  ) {
+  Widget _buildGoalProgress(String title, String subtitle, double current, double target, IconData icon, Color color) {
     final progress = target > 0 ? (current / target).clamp(0.0, 1.0) : 0.0;
-    
     return Row(
       children: [
         CircularPercentIndicator(
@@ -399,28 +358,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              Text(
-                subtitle,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
-              ),
+              Text(title, style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600)),
+              Text(subtitle, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600])),
             ],
           ),
         ),
-        Text(
-          '${(progress * 100).toInt()}%',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
+        Text('${(progress * 100).toInt()}%', style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold, color: color)),
       ],
     );
   }
@@ -429,24 +372,17 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Çalışmaya Başla 🚀',
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
+        Text('Çalışmaya Başla 🚀', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
               child: _buildActionButton(
-                'Çalışma Saati',
+                'Çalışma\nSüresi',
                 Icons.access_time,
-                AppTheme.primaryBlue,
-                () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const StudyTimeEntryScreen(),
-                  ),
-                ).then((_) => _loadData()),
+                // DÜZELTİLDİ: AppTheme -> Theme.of(context)
+                Theme.of(context).colorScheme.secondary,
+                () => Navigator.push(context, MaterialPageRoute(builder: (context) => const StudyTimeEntryScreen())).then((_) => _loadData()),
               ),
             ),
             const SizedBox(width: 12),
@@ -454,13 +390,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               child: _buildActionButton(
                 'Soru Gir',
                 Icons.quiz,
-                AppTheme.primaryPurple,
-                () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const QuestionEntryScreen(),
-                  ),
-                ).then((_) => _loadData()),
+                // DÜZELTİLDİ: AppTheme -> Theme.of(context)
+                Theme.of(context).primaryColor,
+                () => Navigator.push(context, MaterialPageRoute(builder: (context) => const QuestionEntryScreen())).then((_) => _loadData()),
               ),
             ),
             const SizedBox(width: 12),
@@ -468,13 +400,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               child: _buildActionButton(
                 'Deneme Gir',
                 Icons.assignment,
-                AppTheme.accentBlue,
-                () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ExamEntryScreen(),
-                  ),
-                ).then((_) => _loadData()),
+                // DÜZELTİLDİ: AppTheme -> Theme.of(context)
+                Theme.of(context).colorScheme.tertiary ?? Colors.teal,
+                () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ExamEntryScreen())).then((_) => _loadData()),
               ),
             ),
           ],
@@ -487,39 +415,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Araçlar 🛠️',
-          style: Theme.of(context).textTheme.headlineSmall,
-        ),
+        Text('Araçlar 🛠️', style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 16),
-        Row(
+        Column(
           children: [
-            Expanded(
-              child: _buildToolButton(
-                'Net Hesaplayıcı',
-                Icons.calculate,
-                AppTheme.secondaryPurple,
-                () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const NetCalculatorScreen(),
-                  ),
-                ),
-              ),
+            _buildToolButton(
+              'Net Hesaplayıcı',
+              Icons.calculate,
+              // DÜZELTİLDİ: AppTheme -> Theme.of(context)
+              Theme.of(context).colorScheme.secondary,
+              () => Navigator.push(context, MaterialPageRoute(builder: (context) => const NetCalculatorScreen())),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildToolButton(
-                'Pomodoro Timer',
-                Icons.timer,
-                Colors.orange,
-                () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const PomodoroScreen(),
-                  ),
-                ),
-              ),
+            const SizedBox(height: 12),
+            _buildToolButton(
+              'Pomodoro Timer',
+              Icons.timer,
+              Colors.orange,
+              () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PomodoroScreen())),
             ),
           ],
         ),
@@ -527,12 +439,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildActionButton(
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
+  Widget _buildActionButton(String title, IconData icon, Color color, VoidCallback onTap) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       child: Material(
@@ -543,8 +450,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: Hero(
             tag: 'action_$title',
             child: Container(
-              height: 100,
-              padding: const EdgeInsets.all(16),
+              height: 120,
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [color, color.withOpacity(0.8)],
@@ -552,13 +459,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
+                boxShadow: [BoxShadow(color: color.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 5))],
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -569,7 +470,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     builder: (context, value, child) {
                       return Transform.scale(
                         scale: value,
-                        child: Icon(icon, color: Colors.white, size: 24),
+                        child: Icon(icon, color: Colors.white, size: 28),
                       );
                     },
                   ),
@@ -577,11 +478,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   Flexible(
                     child: Text(
                       title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600, height: 1.2),
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -596,12 +493,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildToolButton(
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
+  Widget _buildToolButton(String title, IconData icon, Color color, VoidCallback onTap) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       child: Material(
@@ -610,36 +502,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           onTap: onTap,
           borderRadius: BorderRadius.circular(16),
           child: Container(
+            width: double.infinity,
             height: 80,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: color.withOpacity(0.3),
-                width: 1,
-              ),
+              border: Border.all(color: color.withOpacity(0.3), width: 1),
             ),
             child: Row(
               children: [
                 Container(
                   width: 40,
                   height: 40,
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(10)),
                   child: Icon(icon, color: Colors.white, size: 20),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     title,
-                    style: TextStyle(
-                      color: color,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(color: color, fontSize: 14, fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
@@ -651,12 +534,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _showGoalDialog() {
-    final studyController = TextEditingController(
-      text: _dailyGoal?.studyHours.toString() ?? '4',
-    );
-    final questionController = TextEditingController(
-      text: _dailyGoal?.questionCount.toString() ?? '100',
-    );
+    final studyController = TextEditingController(text: _dailyGoal?.studyHours.toString() ?? '4');
+    final questionController = TextEditingController(text: _dailyGoal?.questionCount.toString() ?? '100');
 
     showDialog(
       context: context,
@@ -665,41 +544,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
-              controller: studyController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Çalışma Süresi (saat)',
-                prefixIcon: Icon(Icons.access_time),
-              ),
-            ),
+            TextField(controller: studyController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'Çalışma Süresi (saat)', prefixIcon: Icon(Icons.access_time))),
             const SizedBox(height: 16),
-            TextField(
-              controller: questionController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Soru Sayısı',
-                prefixIcon: Icon(Icons.quiz),
-              ),
-            ),
+            TextField(controller: questionController, keyboardType: TextInputType.number, decoration: InputDecoration(labelText: 'Soru Sayısı', prefixIcon: Icon(Icons.quiz))),
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('İptal')),
           ElevatedButton(
             onPressed: () {
               final studyHours = int.tryParse(studyController.text) ?? 4;
               final questionCount = int.tryParse(questionController.text) ?? 100;
-              
-              final goal = DailyGoal(
-                studyHours: studyHours,
-                questionCount: questionCount,
-                date: DateTime.now(),
-              );
-              
+              final goal = DailyGoal(studyHours: studyHours, questionCount: questionCount, date: DateTime.now());
               StorageService.saveDailyGoal(goal);
               Navigator.pop(context);
               _loadData();
