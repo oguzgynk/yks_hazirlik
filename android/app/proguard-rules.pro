@@ -5,6 +5,18 @@
 -keep class io.flutter.view.**  { *; }
 -keep class io.flutter.**  { *; }
 -keep class io.flutter.plugins.**  { *; }
+-keep class io.flutter.embedding.** { *; }
+
+# Google Play Core - ÖNEMLİ: Bu kurallar eksikti!
+-keep class com.google.android.play.core.** { *; }
+-dontwarn com.google.android.play.core.**
+-keep class com.google.android.play.core.splitcompat.** { *; }
+-keep class com.google.android.play.core.splitinstall.** { *; }
+-keep class com.google.android.play.core.tasks.** { *; }
+
+# Flutter Play Store Split Application - Bu da eksikti!
+-keep class io.flutter.embedding.android.FlutterPlayStoreSplitApplication { *; }
+-keep class io.flutter.embedding.engine.deferredcomponents.** { *; }
 
 # Gson specific classes
 -keep class sun.misc.Unsafe { *; }
@@ -54,6 +66,14 @@
   public *;
 }
 
+# Kotlin
+-keep class kotlin.** { *; }
+-keep class kotlin.Metadata { *; }
+-dontwarn kotlin.**
+-keepclassmembers class **$WhenMappings {
+    <fields>;
+}
+
 # Remove debug logs in release
 -assumenosideeffects class android.util.Log {
     public static boolean isLoggable(java.lang.String, int);
@@ -89,10 +109,6 @@
 -keepattributes *Annotation*
 -keepattributes SourceFile,LineNumberTable
 -keepattributes Signature
-
-# Keep Flutter-specific classes
--keep class io.flutter.embedding.** { *; }
--keep class io.flutter.plugin.** { *; }
 
 # Keep local notifications
 -keep class com.dexterous.** { *; }
@@ -152,3 +168,14 @@
 # Work Manager
 -keep class androidx.work.** { *; }
 -dontwarn androidx.work.**
+
+# R8 full mode uyumluluğu için
+-keepclassmembers,allowobfuscation class * {
+  @com.google.gson.annotations.SerializedName <fields>;
+}
+
+# Enum sınıfları için
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}
