@@ -146,15 +146,6 @@ class StorageService {
     return topicsJson.map((json) => Topic.fromMap(jsonDecode(json))).toList();
   }
 
-  // Premium durum
-  static Future<void> setPremiumStatus(bool isPremium) async {
-    await setBool('is_premium', isPremium);
-  }
-
-  static bool getPremiumStatus() {
-    return getBool('is_premium') ?? false;
-  }
-
   // YKS tarihi
   static Future<void> saveYksDate(DateTime date) async {
     await setString('yks_date', date.toIso8601String());

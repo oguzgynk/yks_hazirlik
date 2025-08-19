@@ -666,24 +666,7 @@ class _BooksScreenState extends State<BooksScreen> with TickerProviderStateMixin
   }
 
   void _addBook(String name, String publisher, String examType, String subject) {
-    if (!StorageService.getPremiumStatus() && _books.length >= 10) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Row(
-            children: [
-              Icon(Icons.warning, color: Colors.white),
-              SizedBox(width: 12),
-              Expanded(child: Text('En fazla 10 kitap ekleyebilirsiniz. Premium\'a geçerek sınırsız kitap ekleyebilirsiniz.')),
-            ],
-          ),
-          backgroundColor: Colors.orange,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          duration: const Duration(seconds: 4),
-        ),
-      );
-      return;
-    }
+   
 
     final topicsMap = examType == 'TYT' ? AppConstants.tytTopics : AppConstants.aytTopics;
     final topicNames = topicsMap[subject] ?? [];

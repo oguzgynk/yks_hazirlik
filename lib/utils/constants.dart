@@ -5,13 +5,10 @@ class AppConstants {
   static DateTime yksDate = DateTime(2026, 6, 20); // 20 Haziran 2026
   
   // AdMob IDs (Test IDs)
-  static const String bannerAdUnitId = 'ca-app-pub-3940256099942544/6300978111';
-  static const String interstitialAdUnitId = 'ca-app-pub-3940256099942544/1033173712';  
+  static const String bannerAdUnitId = 'ca-app-pub-5753387919513078/1086271753';
+  static const String interstitialAdUnitId = 'ca-app-pub-5753387919513078/9566895997';  
   
-  // Premium fiyat
-  static const String premiumProductId = 'remove_ads_premium';
-  static const double premiumPrice = 200.0;
-  
+
   // Motivasyon sözleri
   static List<MotivationQuote> motivationQuotes = [
     MotivationQuote(quote: "Başarı, hazırlık ile fırsatın buluştuğu andır.", author: "Bobby Unser"),

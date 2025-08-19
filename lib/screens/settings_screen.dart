@@ -23,7 +23,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   DateTime _yksDate = AppConstants.yksDate;
-  bool _isPremium = false;
+  // bool _isPremium = false; // Premium durumu kaldırıldı
   bool _notificationsEnabled = true;
 
   @override
@@ -35,7 +35,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _loadSettings() {
     setState(() {
       _yksDate = StorageService.getYksDate() ?? AppConstants.yksDate;
-      _isPremium = StorageService.getPremiumStatus();
+      // _isPremium = StorageService.getPremiumStatus(); // Premium kontrolü kaldırıldı
       _notificationsEnabled = StorageService.getNotificationEnabled();
     });
   }
@@ -59,8 +59,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 24),
             _buildToolsSection(),
             const SizedBox(height: 24),
-            _buildPremiumSection(),
-            const SizedBox(height: 24),
+            // _buildPremiumSection(), // Premium bölümü tamamen kaldırıldı
             _buildInfoSection(),
           ],
         ),
@@ -109,29 +108,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 : daysLeft == 0 
                   ? 'Bugün sınav günü!'
                   : 'Sınav geçti',
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 14,
               ),
             ),
-            if (_isPremium) ...[
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.amber,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  'Premium Üye',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
+            // Premium rozeti kaldırıldı
           ],
         ),
       ),
@@ -211,52 +193,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               Text('Tema Seç', style: Theme.of(context).textTheme.headlineSmall),
               const SizedBox(height: 16),
+              // Tema kısıtlamaları tamamen kaldırıldı
               ...AppThemes.themeDisplayNames.entries.map((entry) {
                 final themeName = entry.key;
                 final themeDisplayName = entry.value;
-                final isPremiumTheme = AppThemes.premiumThemes.contains(themeName);
-                final canUseTheme = !isPremiumTheme || _isPremium;
 
-                return Opacity(
-                  opacity: canUseTheme ? 1.0 : 0.6,
-                  child: ListTile(
-                    onTap: canUseTheme
-                        ? () {
-                            widget.onThemeChanged(themeName);
-                            Navigator.pop(context);
-                          }
-                        : () {
-                            Navigator.pop(context);
-                            if (!_isPremium) {
-                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Bu tema için Premium üye olmalısınız.')));
-                            }
-                          },
-                    leading: Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        gradient: AppThemes.getGradient(themeName),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Theme.of(context).dividerColor, width: 2)
-                      ),
-                    ),
-                    title: Text(themeDisplayName),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (isPremiumTheme)
-                          Icon(Icons.star, color: Colors.amber, size: 16),
-                        if (!canUseTheme) ...[
-                          const SizedBox(width: 8),
-                          Icon(Icons.lock, color: Colors.grey, size: 16),
-                        ],
-                        if (widget.currentTheme == themeName) ...[
-                           const SizedBox(width: 8),
-                           Icon(Icons.check_circle, color: Theme.of(context).primaryColor),
-                        ],
-                      ],
+                return ListTile(
+                  onTap: () { // Her zaman tıklanabilir
+                    widget.onThemeChanged(themeName);
+                    Navigator.pop(context);
+                  },
+                  leading: Container(
+                    width: 30,
+                    height: 30,
+                    decoration: BoxDecoration(
+                      gradient: AppThemes.getGradient(themeName),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Theme.of(context).dividerColor, width: 2)
                     ),
                   ),
+                  title: Text(themeDisplayName),
+                  trailing: widget.currentTheme == themeName
+                      ? Icon(Icons.check_circle, color: Theme.of(context).primaryColor)
+                      : null, // Kilit ikonu ve diğer kontroller kaldırıldı
                 );
               }).toList(),
                const SizedBox(height: 16),
@@ -294,120 +253,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildPremiumSection() {
-    if (_isPremium) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Premium', style: Theme.of(context).textTheme.headlineSmall),
-          const SizedBox(height: 12),
-          Card(
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.amber.withOpacity(0.2), Colors.orange.withOpacity(0.1)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                children: [
-                  Icon(Icons.star, color: Colors.amber, size: 32),
-                  const SizedBox(height: 8),
-                  const Text('Premium Üyesiniz!', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Reklamları kaldırdınız ve tüm premium özelliklere erişiminiz var',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Premium', style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: 12),
-        Card(
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    gradient: AppThemes.getGradient(widget.currentTheme),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.star, color: Colors.white, size: 30),
-                ),
-                const SizedBox(height: 12),
-                const Text('Premium\'a Geçin', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                Text(
-                  '${AppConstants.premiumPrice.toInt()} TL',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Column(
-                  children: [
-                    _buildPremiumFeature('Reklamları kaldır'),
-                    _buildPremiumFeature('4 Özel Tema Kilidini Aç'),
-                    _buildPremiumFeature('Sınırsız kitap ekleme'),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _purchasePremium,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Theme.of(context).primaryColor,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text('Premium Satın Al', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPremiumFeature(String feature) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.check_circle, color: Colors.green, size: 16),
-          const SizedBox(width: 8),
-          Text(feature, style: Theme.of(context).textTheme.bodyMedium),
-        ],
-      ),
-    );
-  }
+  // _buildPremiumSection metodu tamamen silindi.
 
   Widget _buildInfoSection() {
     return Column(
@@ -431,7 +277,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 subtitle: 'Play Store\'da değerlendirin',
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Play Store\'a yönlendiriliyor...')),
+                    const SnackBar(content: Text('Play Store\'a yönlendiriliyor...')),
                   );
                 },
               ),
@@ -453,9 +299,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         child: Icon(icon, color: Theme.of(context).primaryColor, size: 20),
       ),
-      title: Text(title, style: TextStyle(fontWeight: FontWeight.w600)),
+      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
       subtitle: Text(subtitle),
-      trailing: Icon(Icons.arrow_forward_ios, size: 16),
+      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       onTap: onTap,
     );
   }
@@ -473,39 +319,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() => _yksDate = selectedDate);
       await StorageService.saveYksDate(selectedDate);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('YKS tarihi güncellendi!'), backgroundColor: Colors.green));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('YKS tarihi güncellendi!'), backgroundColor: Colors.green));
       }
     }
   }
 
-  void _purchasePremium() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Premium Satın Al'),
-        content: const Text('Premium özellikler için Google Play Store üzerinden ödeme yapılacaktır. Devam etmek istiyor musunuz?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('İptal'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              // Simüle edilmiş satın alma
-              await Future.delayed(const Duration(seconds: 2));
-              await StorageService.setPremiumStatus(true);
-              setState(() => _isPremium = true);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Premium satın alındı! Teşekkürler! 🎉'), backgroundColor: Colors.green));
-              }
-            },
-            child: const Text('Satın Al'),
-          ),
-        ],
-      ),
-    );
-  }
+  // _purchasePremium metodu tamamen silindi.
 
   void _showAboutDialog() {
     showAboutDialog(
@@ -519,7 +338,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           gradient: AppThemes.getGradient(widget.currentTheme),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(Icons.school, color: Colors.white, size: 30),
+        child: const Icon(Icons.school, color: Colors.white, size: 30),
       ),
       children: [
         const Text('YKS Asistanım sürecinizi organize etmenize yardımcı olan kapsamlı bir uygulama.'),

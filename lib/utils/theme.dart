@@ -11,8 +11,7 @@ class AppThemes {
   static const String forest = 'forest'; // Premium
   static const String dusk = 'dusk';     // Premium
 
-  // Premium temaların listesi (Ayarlar ekranında kontrol için)
-  static List<String> premiumThemes = [ocean, sunset, forest, dusk];
+
   
   // Temaların kullanıcının göreceği adları
   static Map<String, String> themeDisplayNames = {

@@ -8,12 +8,18 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'screens/main_navigation.dart';
 import 'services/storage_service.dart';
 import 'utils/theme.dart';
+import 'dart:io';  
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  if (Platform.isAndroid || Platform.isIOS) {
+    // Sadece Android ve iOS cihazlarda reklamları başlat
+    MobileAds.instance.initialize();
+  }
+
   await initializeDateFormatting('tr_TR', null);
-  await MobileAds.instance.initialize();
+  //await MobileAds.instance.initialize();
   await StorageService.init();
   
   SystemChrome.setSystemUIOverlayStyle(

@@ -1,7 +1,7 @@
 name: yks_app
 description: YKS sınavına hazırlanan öğrenciler için geliştirilmiş kapsamlı bir mobil uygulama.
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.3+5
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
