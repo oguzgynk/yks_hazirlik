@@ -200,6 +200,11 @@ class StorageService {
     return getBool('notifications_enabled') ?? true;
   }
 
+  static Future<void> updateLastSeenDate() {
+  final now = DateTime.now().toIso8601String();
+  return _prefs.setString('lastSeenDate', now);
+}
+
   // Çalışma verileri için yardımcı metodlar
   static List<StudySession> getStudySessionsByDateRange(DateTime start, DateTime end) {
     List<StudySession> allSessions = getStudySessions();

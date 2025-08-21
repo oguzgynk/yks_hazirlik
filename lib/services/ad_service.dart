@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../utils/constants.dart';
+import 'package:flutter/services.dart';
 
 // Premium kontrolü olmadığı için 'storage_service.dart' importu kaldırıldı.
 
@@ -134,6 +135,7 @@ class AdService {
               print('Geçiş reklamı gösterildi');
             },
             onAdDismissedFullScreenContent: (ad) {
+              SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
               // Kullanıcı reklamı kapattığında
               print('Geçiş reklamı kapatıldı');
               ad.dispose();

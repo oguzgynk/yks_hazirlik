@@ -1,4 +1,3 @@
-// android/app/build.gradle.kts
 import java.util.Properties
 import java.io.FileInputStream
 
@@ -8,7 +7,6 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-// local.properties dosyasından değerleri okuma
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
@@ -17,7 +15,6 @@ if (localPropertiesFile.exists()) {
     }
 }
 
-// key.properties dosyasından değerleri okuma
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
@@ -41,19 +38,16 @@ android {
         multiDexEnabled = true
         versionCode = flutterVersionCode.toInt()
         versionName = flutterVersionName
-
-        resourceConfigurations.addAll(listOf("tr", "en"))
-        vectorDrawables.useSupportLibrary = true
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
         isCoreLibraryDesugaringEnabled = true
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
 
     sourceSets.getByName("main").java.srcDirs("src/main/kotlin")
@@ -70,56 +64,6 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-            isDebuggable = false
-            isJniDebuggable = false
-            isRenderscriptDebuggable = false
-        }
-        debug {
-            isDebuggable = true
-            isMinifyEnabled = false
-        }
-        getByName("profile") {
-            signingConfig = signingConfigs.getByName("debug")
-            isDebuggable = false
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
-
-    bundle {
-        language {
-            enableSplit = false
-        }
-        density {
-            enableSplit = true
-        }
-        abi {
-            enableSplit = true
-        }
-    }
-
-    lint {
-        disable.add("InvalidPackage")
-        checkReleaseBuilds = false
-        abortOnError = false
-    }
-
-    // dexOptions yerine bu kullanılıyor
-    androidComponents {
-        onVariants { variant ->
-            variant.packaging.jniLibs.pickFirsts.addAll(
-                listOf("**/libc++_shared.so", "**/libjsc.so")
-            )
         }
     }
 }
@@ -129,32 +73,19 @@ flutter {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7")
-    
-    // Google Play Core - Güncellenmiş versiyon
+    implementation(kotlin("stdlib"))
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     implementation("com.google.android.play:app-update:2.1.0")
     implementation("com.google.android.play:app-update-ktx:2.1.0")
     implementation("com.google.android.play:feature-delivery:2.1.0")
     implementation("com.google.android.play:feature-delivery-ktx:2.1.0")
-
-    // Google Play Services
     implementation("com.google.android.gms:play-services-ads:22.6.0")
     implementation("com.android.billingclient:billing:6.1.0")
-
-    // AndroidX
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("androidx.multidex:multidex:2.0.1")
-
-    // Material Design
     implementation("com.google.android.material:material:1.11.0")
-
-    // Network
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
-
-    // Image loading
     implementation("com.github.bumptech.glide:glide:4.16.0")
-    
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }

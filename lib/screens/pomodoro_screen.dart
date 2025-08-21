@@ -26,12 +26,17 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
   bool _isPaused = false;
   int _completedPomodoros = 0;
   int _totalWorkMinutes = 0;
+  DateTime? _sessionStartTime; // Timer başlama zamanı
+  int _currentSessionMinutes = 0; // Mevcut oturumdaki dakikalar
+  DateTime? _lastPauseTime; // Son duraklama zamanı
+  int _totalPausedSeconds = 0; // Toplam duraklatılmış saniye
 
   @override
   void initState() {
     super.initState();
     _controller = CountDownController();
     _loadSettings();
+    _loadTodayStats(); // Günlük istatistikleri yükle
     _setupAnimations();
   }
 
@@ -72,6 +77,23 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
     });
   }
 
+  void _loadTodayStats() {
+    // Bugünün Pomodoro verilerini yükle
+    final today = DateTime.now();
+    final todayStart = DateTime(today.year, today.month, today.day);
+    
+    final sessions = StorageService.getStudySessions();
+    final todaySessions = sessions.where((session) => 
+      session.date.isAfter(todayStart) && 
+      session.subject == 'Pomodoro'
+    ).toList();
+    
+    setState(() {
+      _completedPomodoros = todaySessions.length;
+      _totalWorkMinutes = todaySessions.fold(0, (sum, session) => sum + session.duration);
+    });
+  }
+
   @override
   void dispose() {
     _controller.pause();
@@ -82,6 +104,16 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
 
   int get _currentDuration {
     return _isWorkTime ? _settings.workDuration : _settings.breakDuration;
+  }
+
+  void _startTimer() {
+    _controller.restart(duration: _currentDuration * 60);
+    setState(() {
+      _isRunning = true;
+      _isPaused = false;
+      _sessionStartTime = DateTime.now();
+      _currentSessionMinutes = 0;
+    });
   }
 
   @override
@@ -491,10 +523,25 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
 
   void _toggleTimer() {
     if (_isRunning && !_isPaused) {
+      // Duraklatma
       _controller.pause();
+      _lastPauseTime = DateTime.now();
       setState(() => _isPaused = true);
     } else {
-      _controller.resume();
+      if (!_isRunning) {
+        // İlk başlatma
+        _controller.restart(duration: _currentDuration * 60);
+        _sessionStartTime = DateTime.now();
+        _totalPausedSeconds = 0;
+      } else {
+        // Duraklatmadan sonra devam ettirme
+        _controller.resume();
+        if (_lastPauseTime != null) {
+          final pauseDuration = DateTime.now().difference(_lastPauseTime!).inSeconds;
+          _totalPausedSeconds += pauseDuration;
+          _lastPauseTime = null;
+        }
+      }
       setState(() {
         _isRunning = true;
         _isPaused = false;
@@ -503,16 +550,127 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
   }
 
   void _stopTimer() {
+    // Eğer çalışma zamanında durduruluyorsa, gerçek geçen süreyi kaydet
+    if (_isWorkTime && _isRunning && _sessionStartTime != null && _settings.includeInStudyTime) {
+      final now = DateTime.now();
+      
+      // Mevcut duraklatma süresini hesaba kat
+      int currentPausedSeconds = _totalPausedSeconds;
+      if (_isPaused && _lastPauseTime != null) {
+        currentPausedSeconds += now.difference(_lastPauseTime!).inSeconds;
+      }
+      
+      // Gerçek çalışma süresi
+      final totalElapsedSeconds = now.difference(_sessionStartTime!).inSeconds;
+      final actualWorkSeconds = totalElapsedSeconds - currentPausedSeconds;
+      final elapsedMinutes = (actualWorkSeconds / 60).floor();
+      
+      if (elapsedMinutes > 0) {
+        final session = StudySession(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          subject: 'Pomodoro',
+          topic: 'Çalışma (Durduruldu)',
+          duration: elapsedMinutes,
+          correctAnswers: 0,
+          wrongAnswers: 0,
+          emptyAnswers: 0,
+          date: DateTime.now(),
+        );
+
+        StorageService.saveStudySession(session);
+        
+        setState(() {
+          _totalWorkMinutes += elapsedMinutes;
+        });
+      }
+    }
+    
     _controller.reset();
     setState(() {
       _isRunning = false;
       _isPaused = false;
       _isWorkTime = true;
+      _sessionStartTime = null;
+      _currentSessionMinutes = 0;
+      _lastPauseTime = null;
+      _totalPausedSeconds = 0;
     });
   }
 
   void _skipTimer() {
-    _onTimerComplete();
+    // Eğer çalışma zamanında ve timer çalışıyorsa, gerçek geçen süreyi kaydet
+    if (_isWorkTime && _isRunning && _sessionStartTime != null && _settings.includeInStudyTime) {
+      final now = DateTime.now();
+      
+      // Mevcut duraklatma süresini hesaba kat
+      int currentPausedSeconds = _totalPausedSeconds;
+      if (_isPaused && _lastPauseTime != null) {
+        currentPausedSeconds += now.difference(_lastPauseTime!).inSeconds;
+      }
+      
+      // Gerçek çalışma süresi
+      final totalElapsedSeconds = now.difference(_sessionStartTime!).inSeconds;
+      final actualWorkSeconds = totalElapsedSeconds - currentPausedSeconds;
+      final elapsedMinutes = (actualWorkSeconds / 60).floor();
+      
+      print("DEBUG SKIP: Gerçek çalışma: $actualWorkSeconds saniye = $elapsedMinutes dakika");
+      
+      if (elapsedMinutes > 0) {
+        final session = StudySession(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          subject: 'Pomodoro',
+          topic: 'Çalışma (Kısmi)',
+          duration: elapsedMinutes,
+          correctAnswers: 0,
+          wrongAnswers: 0,
+          emptyAnswers: 0,
+          date: DateTime.now(),
+        );
+
+        StorageService.saveStudySession(session);
+        
+        setState(() {
+          _totalWorkMinutes += elapsedMinutes;
+        });
+        
+        print("DEBUG SKIP: $elapsedMinutes dakika eklendi!");
+      }
+    }
+    
+    // Timer'ı durdur ve modu değiştir
+    _controller.reset();
+    setState(() {
+      _isRunning = false;
+      _isPaused = false;
+      _isWorkTime = !_isWorkTime; // Modu değiştir
+      _sessionStartTime = null;
+      _currentSessionMinutes = 0;
+      _lastPauseTime = null;
+      _totalPausedSeconds = 0;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(_isWorkTime ? Icons.work : Icons.coffee, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                _isWorkTime 
+                    ? 'Çalışma moduna geçildi! 💪'
+                    : 'Mola moduna geçildi! ☕',
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: _isWorkTime ? Theme.of(context).primaryColor : Theme.of(context).colorScheme.secondary,
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
   }
 
   void _onTimerComplete() {
@@ -525,11 +683,15 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
         _totalWorkMinutes += _settings.workDuration;
         
         if (_settings.includeInStudyTime) {
-          _saveStudyTime();
+          _saveFullStudyTime();
         }
       }
       
       _isWorkTime = !_isWorkTime;
+      _sessionStartTime = null;
+      _currentSessionMinutes = 0;
+      _lastPauseTime = null;
+      _totalPausedSeconds = 0;
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -555,11 +717,11 @@ class _PomodoroScreenState extends State<PomodoroScreen> with TickerProviderStat
       ),
     );
 
-    _controller.restart(duration: _currentDuration * 60);
-    _controller.pause();
+    // Timer'ı durdurulan halde yeni süreyle hazırla
+    _controller.reset();
   }
 
-  void _saveStudyTime() {
+  void _saveFullStudyTime() {
     final session = StudySession(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       subject: 'Pomodoro',

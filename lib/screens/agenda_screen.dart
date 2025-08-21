@@ -6,6 +6,7 @@ import '../utils/constants.dart';
 import '../utils/theme.dart';
 import '../services/storage_service.dart';
 import '../models/data_models.dart';
+import '../services/notification_service.dart'; // Gerekli import
 
 class AgendaScreen extends StatefulWidget {
   const AgendaScreen({super.key});
@@ -72,7 +73,7 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddActivityDialog,
         backgroundColor: Theme.of(context).primaryColor,
-        child: Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
@@ -115,7 +116,7 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
                   });
                   _loadActivities();
                 },
-                icon: Icon(Icons.chevron_left),
+                icon: const Icon(Icons.chevron_left),
               ),
               GestureDetector(
                 onTap: _selectDate,
@@ -142,7 +143,7 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
                   });
                   _loadActivities();
                 },
-                icon: Icon(Icons.chevron_right),
+                icon: const Icon(Icons.chevron_right),
               ),
             ],
           ),
@@ -172,14 +173,13 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
                 },
                 icon: const Icon(Icons.chevron_left),
               ),
-              // YENİ DEĞİŞİKLİK: Expanded widget'ı eklendi
               Expanded(
                 child: Column(
                   children: [
                     Text(
                       '${DateFormat('dd MMM', 'tr_TR').format(startOfWeek)} - ${DateFormat('dd MMM yyyy', 'tr_TR').format(endOfWeek)}',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 16),
-                      textAlign: TextAlign.center, // Yazıyı kendi içinde de ortala
+                      textAlign: TextAlign.center,
                     ),
                     Text(
                       'Haftalık Görünüm',
@@ -380,7 +380,7 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
       case AgendaActivityType.solveQuestions:
         return Theme.of(context).colorScheme.secondary;
       case AgendaActivityType.other:
-        return Colors.teal; // Temadan bağımsız bir renk olabilir
+        return Colors.teal;
     }
   }
 
@@ -430,6 +430,14 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
       case 'complete':
         final updatedActivity = activity.copyWith(isCompleted: !activity.isCompleted);
         await StorageService.saveAgendaActivity(updatedActivity);
+
+        // YENİ: Aktivite tamamlandıysa bildirimi iptal et.
+        if (updatedActivity.isCompleted) {
+          await NotificationService.cancelAgendaNotification(updatedActivity.id);
+        } else {
+          // Eğer "geri al" yapıldıysa, bildirimi tekrar kur.
+          await NotificationService.scheduleAgendaNotification(updatedActivity);
+        }
         
         if (updatedActivity.isCompleted && 
             updatedActivity.autoCompleteBookTopic && 
@@ -462,7 +470,6 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
       }
       await StorageService.saveBook(book);
     } catch (e) {
-      // Kitap bulunamazsa hata vermemesi için
       print("Otomatik tamamlama için kitap bulunamadı: ${activity.bookId}");
     }
   }
@@ -491,6 +498,9 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
           ),
           ElevatedButton(
             onPressed: () async {
+              // YENİ: Aktivite silinmeden önce planlanmış bildirimi iptal et.
+              await NotificationService.cancelAgendaNotification(activity.id);
+
               await StorageService.removeAgendaActivity(activity.id);
               Navigator.pop(context);
               _loadActivities();
@@ -503,8 +513,6 @@ class _AgendaScreenState extends State<AgendaScreen> with TickerProviderStateMix
     );
   }
 }
-
-// Dialog sınıfları aşağıda (AddActivityDialog, ActivityDetailsSheet)
 
 class AddActivityDialog extends StatefulWidget {
   final DateTime selectedDate;
@@ -607,7 +615,7 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
         const SizedBox(height: 8),
         DropdownButtonFormField<AgendaActivityType>(
           value: _selectedType,
-          decoration: InputDecoration(border: OutlineInputBorder(), isDense: true),
+          decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
           items: const [
             DropdownMenuItem(value: AgendaActivityType.studyTopic, child: Text('Konu Çalışacağım')),
             DropdownMenuItem(value: AgendaActivityType.solveQuestions, child: Text('Soru Çözeceğim')),
@@ -640,7 +648,7 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
               InkWell(
                 onTap: _selectDate,
                 child: InputDecorator(
-                  decoration: InputDecoration(border: OutlineInputBorder(), isDense: true),
+                  decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
                   child: Text(DateFormat('dd/MM/yyyy').format(_selectedDate)),
                 ),
               ),
@@ -657,7 +665,7 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
               InkWell(
                 onTap: _selectTime,
                 child: InputDecorator(
-                  decoration: InputDecoration(border: OutlineInputBorder(), isDense: true),
+                  decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
                   child: Text(_selectedTime.format(context)),
                 ),
               ),
@@ -677,7 +685,7 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
         TextFormField(
           initialValue: _duration.toString(),
           keyboardType: TextInputType.number,
-          decoration: InputDecoration(border: OutlineInputBorder(), isDense: true),
+          decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
           onChanged: (value) {
             _duration = int.tryParse(value) ?? 60;
           },
@@ -702,7 +710,7 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
       children: [
         DropdownButtonFormField<String>(
           value: _examType,
-          decoration: InputDecoration(labelText: 'Sınav Türü', border: OutlineInputBorder(), isDense: true),
+          decoration: const InputDecoration(labelText: 'Sınav Türü', border: OutlineInputBorder(), isDense: true),
           items: ['TYT', 'AYT'].map((type) => DropdownMenuItem(value: type, child: Text(type))).toList(),
           onChanged: (value) {
             setState(() {
@@ -716,7 +724,7 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
         if (_examType != null) ...[
           DropdownButtonFormField<String>(
             value: _subject,
-            decoration: InputDecoration(labelText: 'Ders', border: OutlineInputBorder(), isDense: true),
+            decoration: const InputDecoration(labelText: 'Ders', border: OutlineInputBorder(), isDense: true),
             items: _getSubjects().map((subject) => DropdownMenuItem(value: subject, child: Text(subject))).toList(),
             onChanged: (value) {
               setState(() {
@@ -730,7 +738,7 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
         if (_subject != null) ...[
           DropdownButtonFormField<String>(
             value: _topic,
-            decoration: InputDecoration(labelText: 'Konu', border: OutlineInputBorder(), isDense: true),
+            decoration: const InputDecoration(labelText: 'Konu', border: OutlineInputBorder(), isDense: true),
             items: _getTopics().map((topic) => DropdownMenuItem(value: topic, child: Text(topic, overflow: TextOverflow.ellipsis))).toList(),
             onChanged: (value) {
               setState(() {
@@ -750,7 +758,7 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
       children: [
         DropdownButtonFormField<String>(
           value: _bookId,
-          decoration: InputDecoration(labelText: 'Kitap (İsteğe bağlı)', border: OutlineInputBorder(), isDense: true),
+          decoration: const InputDecoration(labelText: 'Kitap (İsteğe bağlı)', border: OutlineInputBorder(), isDense: true),
           items: [
             const DropdownMenuItem(value: null, child: Text('Kitap seçmeyin')),
             ...books.map((book) => DropdownMenuItem(value: book.id, child: Text(book.name))),
@@ -773,7 +781,7 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
         const SizedBox(height: 16),
         if (_bookId == null) ...[
           TextFormField(
-            decoration: InputDecoration(labelText: 'Ders', border: OutlineInputBorder(), isDense: true),
+            decoration: const InputDecoration(labelText: 'Ders', border: OutlineInputBorder(), isDense: true),
             onChanged: (value) {
               _subject = value;
             },
@@ -781,7 +789,7 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
           const SizedBox(height: 16),
         ],
         TextFormField(
-          decoration: InputDecoration(labelText: 'Konu (İsteğe bağlı)', border: OutlineInputBorder(), isDense: true),
+          decoration: const InputDecoration(labelText: 'Konu (İsteğe bağlı)', border: OutlineInputBorder(), isDense: true),
           onChanged: (value) {
             _topic = value.isEmpty ? null : value;
           },
@@ -805,7 +813,7 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
   Widget _buildOtherFields() {
     return TextFormField(
       controller: _customTitleController,
-      decoration: InputDecoration(labelText: 'Aktivite Başlığı', border: OutlineInputBorder(), isDense: true),
+      decoration: const InputDecoration(labelText: 'Aktivite Başlığı', border: OutlineInputBorder(), isDense: true),
       onChanged: (value) {
         _customTitle = value;
       },
@@ -857,10 +865,10 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
       });
     }
   }
-
+  
   void _saveActivity() async {
     if (!_validateFields()) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lütfen gerekli alanları doldurun.'), backgroundColor: Colors.red));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Lütfen gerekli alanları doldurun.'), backgroundColor: Colors.red));
       return;
     }
 
@@ -884,6 +892,10 @@ class _AddActivityDialogState extends State<AddActivityDialog> {
     );
 
     await StorageService.saveAgendaActivity(activity);
+
+    // YENİ: Aktivite kaydedildiğinde bildirim planla.
+    await NotificationService.scheduleAgendaNotification(activity);
+
     Navigator.pop(context);
     widget.onActivityAdded();
   }
@@ -959,6 +971,14 @@ class ActivityDetailsSheet extends StatelessWidget {
                   onPressed: () async {
                     final updatedActivity = activity.copyWith(isCompleted: !activity.isCompleted);
                     await StorageService.saveAgendaActivity(updatedActivity);
+
+                    // YENİ: Durum değiştiğinde bildirimi yönet
+                    if (updatedActivity.isCompleted) {
+                      await NotificationService.cancelAgendaNotification(updatedActivity.id);
+                    } else {
+                      await NotificationService.scheduleAgendaNotification(updatedActivity);
+                    }
+
                     Navigator.pop(context);
                     onActivityUpdated();
                   },
@@ -990,7 +1010,7 @@ class ActivityDetailsSheet extends StatelessWidget {
         children: [
           SizedBox(
             width: 80,
-            child: Text('$label:', style: TextStyle(fontWeight: FontWeight.w600)),
+            child: Text('$label:', style: const TextStyle(fontWeight: FontWeight.w600)),
           ),
           Expanded(child: Text(value)),
         ],

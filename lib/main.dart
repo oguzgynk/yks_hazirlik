@@ -8,25 +8,44 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'screens/main_navigation.dart';
 import 'services/storage_service.dart';
 import 'utils/theme.dart';
-import 'dart:io';  
+import 'dart:io';
+
+// YENİ EKLENEN IMPORT'LAR:
+import 'services/notification_service.dart';
+import 'utils/constants.dart'; // Motivasyon sözleri için
 
 void main() async {
+  // Bu satırın en üstte olduğundan emin olun
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Sizin mevcut kodlarınız
   if (Platform.isAndroid || Platform.isIOS) {
-    // Sadece Android ve iOS cihazlarda reklamları başlat
     MobileAds.instance.initialize();
   }
-
   await initializeDateFormatting('tr_TR', null);
-  //await MobileAds.instance.initialize();
   await StorageService.init();
-  
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-    ),
-  );
+
+  // --- YENİ EKLENEN BİLDİRİM AYARLARI BÖLÜMÜ ---
+  // =================================================================
+  // 1. Bildirim servisini başlat
+  await NotificationService.init();
+
+  // 2. Son görülme tarihini güncelle ve "seni özledik" hatırlatıcısını sıfırla
+  // Bu sayede kullanıcı uygulamayı her açtığında hatırlatıcı ertelenmiş olur.
+  await StorageService.updateLastSeenDate();
+  await NotificationService.resetInactivityReminder();
+
+  // 3. Her gün öğlen 12'de gönderilecek motivasyon bildirimini kur
+  // ÖNEMLİ NOT: Bu satır, AppConstants dosyanızda 'motivationalQuotes' adında
+  // bir motivasyon sözleri listesi (List<String>) olduğunu varsayar.
+  // Eğer listenizin adı farklıysa, lütfen bu satırdaki 'motivationalQuotes' kısmını ona göre düzenleyin.
+  NotificationService.scheduleDailyQuoteNotification(AppConstants.motivationQuotes);
+
+  // =================================================================
+  // --- YENİ BÖLÜM BİTTİ ---
+
+  // Tam ekran modu için sizin kodunuz
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
   
   runApp(const YKSApp());
 }
@@ -39,7 +58,6 @@ class YKSApp extends StatefulWidget {
 }
 
 class _YKSAppState extends State<YKSApp> {
-  // DEĞİŞTİ: bool _isDarkMode -> String _currentTheme
   String _currentTheme = AppThemes.light;
 
   @override
@@ -49,14 +67,12 @@ class _YKSAppState extends State<YKSApp> {
   }
 
   void _loadThemePreference() {
-    // DEĞİŞTİ: Tema adı okunuyor
     final themeName = StorageService.getTheme();
     setState(() {
       _currentTheme = themeName;
     });
   }
 
-  // DEĞİŞTİ: toggleTheme -> changeTheme(String themeName)
   void changeTheme(String themeName) {
     setState(() {
       _currentTheme = themeName;
@@ -69,7 +85,6 @@ class _YKSAppState extends State<YKSApp> {
     return MaterialApp(
       title: 'YKS Asistanım',
       debugShowCheckedModeBanner: false,
-      // DEĞİŞTİ: theme, darkTheme, themeMode yerine tek bir theme
       theme: AppThemes.getThemeData(_currentTheme),
       locale: const Locale('tr', 'TR'),
       localizationsDelegates: const [
@@ -82,7 +97,6 @@ class _YKSAppState extends State<YKSApp> {
         Locale('en', 'US'),
       ],
       home: MainNavigation(
-        // DEĞİŞTİ: Parametreler güncellendi
         currentTheme: _currentTheme,
         onThemeChanged: changeTheme,
       ),
